@@ -3,6 +3,7 @@ package com.icestormikk.services.implementations;
 import com.icestormikk.domain.cinema.Admin;
 import com.icestormikk.services.IAdminService;
 
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class AdminService implements IAdminService {
@@ -23,7 +24,7 @@ public class AdminService implements IAdminService {
     }
 
     @Override
-    public Admin findAdminByUsername(String username) {
+    public Admin getAdminByUsername(String username) {
         for (Admin admin : admins) {
             if (admin.getUsername().equalsIgnoreCase(username)) {
                 return admin;
@@ -31,5 +32,10 @@ public class AdminService implements IAdminService {
         }
 
         return null;
+    }
+
+    @Override
+    public List<Admin> getAllAdmins() {
+        return admins;
     }
 }

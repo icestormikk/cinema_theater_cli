@@ -84,4 +84,15 @@ public class Session {
 
         return false;
     }
+
+    @Override
+    public String toString() {
+        return "Session{" +
+                "movie=" + movie.getTitle() +
+                ", hall=" + hall.getHallNumber() +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", bookedSeats=" + bookedSeats +
+                '}';
+    }
 }

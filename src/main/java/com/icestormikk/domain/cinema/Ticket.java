@@ -41,4 +41,13 @@ public class Ticket {
     public void purchase() {
         status = TicketStatus.Purchased;
     }
+
+    @Override
+    public String toString() {
+        return "Ticket{" +
+                "session=" + session.getMovie().getTitle() +
+                ", seat=" + seat +
+                ", status=" + status +
+                '}';
+    }
 }

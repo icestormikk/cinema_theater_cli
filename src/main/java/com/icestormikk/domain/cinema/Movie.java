@@ -48,4 +48,14 @@ public class Movie {
         this.rating = rating;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "Movie{" +
+                "title='" + title + '\'' +
+                ", genre='" + genre + '\'' +
+                ", durationInMin=" + durationInMin +
+                ", rating=" + rating +
+                '}';
+    }
 }

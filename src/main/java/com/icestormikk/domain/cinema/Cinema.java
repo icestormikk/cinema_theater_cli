@@ -77,4 +77,12 @@ public class Cinema {
         this.sessions.add(session);
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "Cinema{" +
+                "title='" + title + '\'' +
+                ", address='" + address + '\'' +
+                '}';
+    }
 }

@@ -59,4 +59,13 @@ public class User {
     public void cancelTicket(Ticket ticket) {
         tickets.remove(ticket);
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", username='" + username + '\'' +
+                '}';
+    }
 }

@@ -2,9 +2,10 @@ package com.icestormikk.services;
 
 import com.icestormikk.domain.cinema.Admin;
 
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.List;
 
 public interface IAdminService {
+    List<Admin> getAllAdmins();
     Admin createAdmin(String firstName, String lastName, String username);
-    Admin findAdminByUsername(String username);
+    Admin getAdminByUsername(String username);
 }

@@ -3,6 +3,7 @@ package com.icestormikk.services.implementations;
 import com.icestormikk.domain.cinema.User;
 import com.icestormikk.services.IUserService;
 
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class UserService implements IUserService {
@@ -30,5 +31,10 @@ public class UserService implements IUserService {
             }
         }
         return null;
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        return users;
     }
 }

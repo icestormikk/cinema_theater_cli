@@ -40,4 +40,12 @@ public class Hall {
         this.sessions = sessions;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "Hall{" +
+                "seats=" + seats +
+                ", hallNumber=" + hallNumber +
+                '}';
+    }
 }
