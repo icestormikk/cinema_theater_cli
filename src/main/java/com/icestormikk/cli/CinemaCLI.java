@@ -11,6 +11,8 @@ import com.icestormikk.services.implementations.AdminService;
 import com.icestormikk.services.implementations.UserService;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class CinemaCLI {
@@ -453,6 +455,12 @@ public class CinemaCLI {
             }
         }
         if (cinema != null) {
+            cinema.getSessions().forEach(session ->
+                userService.getAllUsers().forEach(user ->
+                    user.getTickets().removeIf(ticket -> ticket.getSession().equals(session))
+                )
+            );
+
             admin.getCinemas().remove(cinema);
             System.out.println("Cinema deleted: " + cinema);
         } else {
@@ -532,6 +540,20 @@ public class CinemaCLI {
         }
 
         if (hall != null) {
+            List<Session> sessionsToRemove = new ArrayList<>();
+            for (Session session : cinema.getSessions()) {
+                if(session.getHall().equals(hall)) {
+                    sessionsToRemove.add(session);
+                }
+            }
+            for (Session session : sessionsToRemove) {
+                for (User user : userService.getAllUsers()) {
+                    List<Ticket> tickets = user.getTickets();
+                    tickets.removeIf(ticket -> ticket.getSession().equals(session));
+                }
+                cinema.getSessions().remove(session);
+            }
+
             cinema.getHalls().remove(hall);
             System.out.println("Hall deleted: " + hall);
         } else {
@@ -736,13 +758,25 @@ public class CinemaCLI {
         System.out.print("Enter session movie title to delete: ");
         String title = scanner.nextLine();
 
-        Session session = null;
+        Session session = cinema.getSessions().stream()
+                .filter(s -> s.getMovie().getTitle().equals(title))
+                .findFirst()
+                .orElse(null);
         for (Session s: cinema.getSessions()) {
             if(s.getMovie().getTitle().equalsIgnoreCase(title)) {
                 session = s;
             }
         }
         if (session != null) {
+            for (User user : userService.getAllUsers()) {
+                var tickets = user.getTickets();
+                for (Ticket ticket : tickets) {
+                    if (ticket.getSession().equals(session)) {
+                        tickets.remove(ticket);
+                    }
+                }
+            }
+
             cinema.getSessions().remove(session);
             System.out.println("Session deleted: " + session);
         } else {
