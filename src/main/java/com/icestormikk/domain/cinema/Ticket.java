@@ -1,5 +1,7 @@
 package com.icestormikk.domain.cinema;
 
+import java.util.Objects;
+
 /**
  * Класс, представляющий билет на сеанс.
  */
@@ -93,5 +95,17 @@ public class Ticket {
                 ", seat=" + seat +
                 ", status=" + status +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Ticket ticket = (Ticket) o;
+        return getSeat() == ticket.getSeat() && Objects.equals(getSession(), ticket.getSession());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getSession(), getSeat());
     }
 }

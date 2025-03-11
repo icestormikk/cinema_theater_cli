@@ -18,7 +18,7 @@ public class UserService implements IUserService {
             }
         }
 
-        User user = new User((long) (users.size() + 1), firstName, lastName, username);
+        User user = new User(firstName, lastName, username);
         users.add(user);
         return user;
     }

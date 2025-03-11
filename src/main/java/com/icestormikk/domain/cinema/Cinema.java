@@ -2,6 +2,7 @@ package com.icestormikk.domain.cinema;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Класс, описывающий кинотеатры, в котором можно посещать киносеансы
@@ -9,16 +10,12 @@ import java.util.List;
 public class Cinema {
     /** Название кинотеатра. */
     private String title;
-
     /** Адрес кинотеатра. */
     private String address;
-
     /** Список залов в кинотеатре. */
     private List<Hall> halls;
-
     /** Список фильмов, доступных в кинотеатре. */
     private List<Movie> movies;
-
     /** Список сеансов в кинотеатре. */
     private List<Session> sessions;
 
@@ -158,5 +155,17 @@ public class Cinema {
                 "title='" + title + '\'' +
                 ", address='" + address + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Cinema cinema = (Cinema) o;
+        return Objects.equals(getTitle(), cinema.getTitle()) && Objects.equals(getAddress(), cinema.getAddress());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getTitle(), getAddress());
     }
 }

@@ -2,6 +2,7 @@ package com.icestormikk.domain.cinema;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Класс, описывающий зал кинотеатра
@@ -89,5 +90,17 @@ public class Hall {
                 "seats=" + seats +
                 ", hallNumber=" + hallNumber +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Hall hall = (Hall) o;
+        return getHallNumber() == hall.getHallNumber();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getHallNumber());
     }
 }

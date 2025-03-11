@@ -1,7 +1,7 @@
 package com.icestormikk.domain.cinema;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Администратор кинотеатра
@@ -10,7 +10,7 @@ public class Admin extends User {
     /**
      * Кинотеатры, которыми он может управлять
      */
-    private List<Cinema> cinemas;
+    private Set<Cinema> cinemas;
 
     /**
      * Конструктор класса Admin. Создаёт нового Администратора кинотеатра
@@ -20,14 +20,14 @@ public class Admin extends User {
      */
     public Admin(String firstName, String lastName, String username) {
         super(firstName, lastName, username);
-        this.cinemas = new LinkedList<>();
+        this.cinemas = new HashSet<>();
     }
 
-    public List<Cinema> getCinemas() {
+    public Set<Cinema> getCinemas() {
         return cinemas;
     }
 
-    public Admin setCinemas(List<Cinema> cinemas) {
+    public Admin setCinemas(Set<Cinema> cinemas) {
         this.cinemas = cinemas;
         return this;
     }

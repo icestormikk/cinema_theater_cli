@@ -3,6 +3,7 @@ package com.icestormikk.domain.cinema;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Класс, представляющий сеанс в кинотеатре.
@@ -164,5 +165,17 @@ public class Session {
                 ", endTime=" + endTime +
                 ", bookedSeats=" + bookedSeats +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Session session = (Session) o;
+        return Objects.equals(getMovie(), session.getMovie()) && Objects.equals(getHall(), session.getHall()) && Objects.equals(getStartTime(), session.getStartTime()) && Objects.equals(getEndTime(), session.getEndTime()) && Objects.equals(getBookedSeats(), session.getBookedSeats());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getMovie(), getHall(), getStartTime(), getEndTime(), getBookedSeats());
     }
 }

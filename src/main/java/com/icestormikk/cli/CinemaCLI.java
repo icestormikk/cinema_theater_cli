@@ -10,7 +10,9 @@ import com.icestormikk.domain.cinema.User;
 import com.icestormikk.services.implementations.AdminService;
 import com.icestormikk.services.implementations.UserService;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -587,7 +589,7 @@ public class CinemaCLI {
         String genre = scanner.nextLine();
         System.out.print("Enter movie rating: ");
         double rating = Double.parseDouble(scanner.nextLine());
-        Movie movie = new Movie(title, genre, duration, rating);
+        Movie movie = new Movie(title, genre, Duration.of(duration, ChronoUnit.MINUTES), rating);
         cinema.addMovie(movie);
         System.out.println("Movie added: " + movie);
     }
@@ -640,7 +642,7 @@ public class CinemaCLI {
         System.out.print("Enter new rating: ");
         double rating = Double.parseDouble(scanner.nextLine());
 
-        movie = new Movie(title, genre, duration, rating);
+        movie = new Movie(title, genre, Duration.of(duration, ChronoUnit.MINUTES), rating);
         System.out.println("Movie updated: " + movie);
     }
 

@@ -1,6 +1,7 @@
 package com.icestormikk.domain.cinema;
 
 import java.time.Duration;
+import java.util.Objects;
 
 /**
  * Класс, представляющий фильм.
@@ -113,5 +114,17 @@ public class Movie {
                 ", durationInMin=" + duration +
                 ", rating=" + rating +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Movie movie = (Movie) o;
+        return Objects.equals(getTitle(), movie.getTitle());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getTitle());
     }
 }
