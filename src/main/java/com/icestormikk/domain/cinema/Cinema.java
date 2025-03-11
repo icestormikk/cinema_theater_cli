@@ -1,39 +1,61 @@
 package com.icestormikk.domain.cinema;
 
-import java.util.LinkedList;
-import java.util.List;
+import com.icestormikk.utils.StrictHashSet;
+
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Класс, описывающий кинотеатры, в котором можно посещать киносеансы
  */
 public class Cinema {
+    private int id;
     /** Название кинотеатра. */
     private String title;
-
     /** Адрес кинотеатра. */
     private String address;
-
     /** Список залов в кинотеатре. */
-    private List<Hall> halls;
-
+    private Set<Hall> halls;
     /** Список фильмов, доступных в кинотеатре. */
-    private List<Movie> movies;
-
+    private Set<Movie> movies;
     /** Список сеансов в кинотеатре. */
-    private List<Session> sessions;
+    private Set<Session> sessions;
 
     /**
      * Конструктор для создания кинотеатра.
      *
-     * @param title    Название кинотеатра.
+     * @param title   Название кинотеатра.
      * @param address Адрес кинотеатра.
      */
-    public Cinema(String title, String address) {
+    public Cinema(Integer id, String title, String address) {
+        this.id = id;
         this.title = title;
         this.address = address;
-        this.halls = new LinkedList<>();
-        this.movies = new LinkedList<>();
-        this.sessions = new LinkedList<>();
+        this.halls = new StrictHashSet<>();
+        this.movies = new StrictHashSet<>();
+        this.sessions = new StrictHashSet<>();
+    }
+
+    public Cinema(String title, String address) {
+        this(null, title, address);
+    }
+
+    /**
+     * Получает уникальный идентификатор кинотеатра
+     * @return Уникальный идентификатор кинотеатра
+     */
+    public int getId() {
+        return id;
+    }
+
+    /**
+     * Обновляет уникальный идентификатор кинотеатра
+     * @param id Новый уникальный идентификатор кинотеатра
+     * @return Оригинальный объект класса Cinema c обновлённым идентификатором
+     */
+    public Cinema setId(int id) {
+        this.id = id;
+        return this;
     }
 
     /**
@@ -76,8 +98,17 @@ public class Cinema {
      * Получает список всех залов кинотеатра
      * @return Список всех залов кинотеатра
      */
-    public List<Hall> getHalls() {
+    public Set<Hall> getHalls() {
         return halls;
+    }
+
+    public Hall getHallByNumber(int number) {
+        for (Hall hall : halls) {
+            if(hall.getHallNumber() == number)
+                return hall;
+        }
+
+        throw new RuntimeException("No Hall with number " + number + " found");
     }
 
     /**
@@ -85,7 +116,7 @@ public class Cinema {
      * @param halls Новый список залов
      * @return Оригинальный объект класса Cinema с новым списком залов
      */
-    public Cinema setHalls(List<Hall> halls) {
+    public Cinema setHalls(Set<Hall> halls) {
         this.halls = halls;
         return this;
     }
@@ -94,7 +125,7 @@ public class Cinema {
      * Добавляет зал в кинотеатр.
      * @param hall Зал для добавления.
      */
-    public Cinema addHall(Hall hall) {
+    public Cinema addHall(Hall hall) throws Exception {
         this.halls.add(hall);
         return this;
     }
@@ -103,15 +134,22 @@ public class Cinema {
      * Получает список всех фильмов, доступных в кинотеатре
      * @return Список доступных фильмов
      */
-    public List<Movie> getMovies() {
+    public Set<Movie> getMovies() {
         return movies;
+    }
+
+    public Movie getMovieByTitle(String title) {
+        return movies.stream()
+                .filter(movie -> movie.getTitle().equals(title))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Movie with such name not found"));
     }
 
     /**
      * Обновляет список фильмов, доступных в кинотеатре
      * @return Оригинальный объект класса Cinema с новым списком сеансов
      */
-    public Cinema setMovies(List<Movie> movies) {
+    public Cinema setMovies(Set<Movie> movies) {
         this.movies = movies;
         return this;
     }
@@ -120,7 +158,7 @@ public class Cinema {
      * Добавляет фильм в кинотеатр.
      * @param movie Фильм для добавления.
      */
-    public Cinema addMovie(Movie movie) {
+    public Cinema addMovie(Movie movie) throws Exception {
         this.movies.add(movie);
         return this;
     }
@@ -129,7 +167,7 @@ public class Cinema {
      * Возвращает список всех сеансов в кинотеатре
      * @return Список сеансов
      */
-    public List<Session> getSessions() {
+    public Set<Session> getSessions() {
         return sessions;
     }
 
@@ -138,7 +176,7 @@ public class Cinema {
      * @param sessions Новый список сеансов
      * @return Оригинальный объект класса Cinema с новым списком сеансов
      */
-    public Cinema setSessions(List<Session> sessions) {
+    public Cinema setSessions(Set<Session> sessions) {
         this.sessions = sessions;
         return this;
     }
@@ -147,7 +185,7 @@ public class Cinema {
      * Добавляет сеанс в кинотеатр.
      * @param session Сеанс для добавления.
      */
-    public Cinema addSession(Session session) {
+    public Cinema addSession(Session session) throws Exception {
         this.sessions.add(session);
         return this;
     }
@@ -155,8 +193,21 @@ public class Cinema {
     @Override
     public String toString() {
         return "Cinema{" +
-                "title='" + title + '\'' +
+                "id=" + id +
+                ", title='" + title + '\'' +
                 ", address='" + address + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Cinema cinema = (Cinema) o;
+        return Objects.equals(getTitle(), cinema.getTitle()) && Objects.equals(getAddress(), cinema.getAddress());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getTitle(), getAddress());
     }
 }

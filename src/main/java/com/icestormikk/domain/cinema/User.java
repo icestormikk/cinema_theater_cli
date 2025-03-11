@@ -1,12 +1,15 @@
 package com.icestormikk.domain.cinema;
 
-import java.util.LinkedList;
-import java.util.List;
+import com.icestormikk.utils.StrictHashSet;
+
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Класс, представляющий пользователя системы.
  */
 public class User {
+    private Integer id;
     /** Имя пользователя. */
     private String firstName;
     /** Фамилия пользователя. */
@@ -14,7 +17,7 @@ public class User {
     /** Никнейм пользователя. */
     private String username;
     /** Список билетов, забронированных пользователем. */
-    public List<Ticket> tickets;
+    public Set<Ticket> tickets;
 
     /**
      * Конструктор для создания пользователя.
@@ -22,11 +25,34 @@ public class User {
      * @param lastName Фамилия пользователя.
      * @param username Никнейм пользователя.
      */
-    public User(String firstName, String lastName, String username) {
+    public User(Integer id, String firstName, String lastName, String username) {
+        this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
-        this.tickets = new LinkedList<>();
+        this.tickets = new StrictHashSet<>();
+    }
+
+    public User(String firstName, String lastName, String username) {
+        this(null, firstName, lastName, username);
+    }
+
+    /**
+     * Получить идентификатор пользователя
+     * @return Идентификатор пользователя
+     */
+    public Integer getId() {
+        return id;
+    }
+
+    /**
+     * Обновить идентификатор пользователя
+     * @param id Новый идентификатор пользователя
+     * @return Оригинальный объект класса User c обновлённым идентификатором
+     */
+    public User setId(Integer id) {
+        this.id = id;
+        return this;
     }
 
     /**
@@ -87,7 +113,7 @@ public class User {
      * Возвращает список билетов пользователя.
      * @return Список билетов пользователя.
      */
-    public List<Ticket> getTickets() {
+    public Set<Ticket> getTickets() {
         return tickets;
     }
 
@@ -96,7 +122,7 @@ public class User {
      * @param tickets Список билетов пользователя
      * @return Оригинальный объект класса User с новым списком билетов
      */
-    public User setTickets(List<Ticket> tickets) {
+    public User setTickets(Set<Ticket> tickets) {
         this.tickets = tickets;
         return this;
     }
@@ -120,9 +146,22 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "firstName='" + firstName + '\'' +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", username='" + username + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(getUsername(), user.getUsername());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getUsername());
     }
 }

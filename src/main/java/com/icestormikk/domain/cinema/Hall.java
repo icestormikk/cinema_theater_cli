@@ -1,28 +1,54 @@
 package com.icestormikk.domain.cinema;
 
-import java.util.LinkedList;
-import java.util.List;
+import com.icestormikk.utils.StrictHashSet;
+
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Класс, описывающий зал кинотеатра
  */
 public class Hall {
+    private int id;
     /** Номер зала кинотеатра */
     private int hallNumber;
     /** Количество мест в зале. */
     private int seats;
     /** Список сеансов, проходящих в зале. */
-    private List<Session> sessions;
+    private Set<Session> sessions;
 
     /**
      * Конструктор для создания зала.
      * @param hallNumber Номер зала.
      * @param seats Количество мест в зале.
      */
-    public Hall(int hallNumber, int seats) {
+    public Hall(Integer id, int hallNumber, int seats) {
+        this.id = id;
         this.hallNumber = hallNumber;
         this.seats = seats;
-        this.sessions = new LinkedList<>();
+        this.sessions = new StrictHashSet<>();
+    }
+
+    public Hall(int hallNumber, int seats) {
+        this(null, hallNumber, seats);
+    }
+
+    /**
+     * Получить уникальный идентификатор зала
+     * @return Уникальный идентификатор зала
+     */
+    public int getId() {
+        return id;
+    }
+
+    /**
+     * Обновить уникальный идентификатор зала
+     * @param id Новый уникальный идентификатор зала
+     * @return Оригинальный объект класса Hall c обновлённым идентификатором
+     */
+    public Hall setId(int id) {
+        this.id = id;
+        return this;
     }
 
     /**
@@ -69,7 +95,7 @@ public class Hall {
      * Получить список сеансов, проходящих в зале.
      * @return Список сеансов, проходящих в зале.
      */
-    public List<Session> getSessions() {
+    public Set<Session> getSessions() {
         return sessions;
     }
 
@@ -78,7 +104,7 @@ public class Hall {
      * @param sessions Новый список сеансов, проходящих в зале.
      * @return Оригинальный объект класса Hall с новым списком сеансов
      */
-    public Hall setSessions(List<Session> sessions) {
+    public Hall setSessions(Set<Session> sessions) {
         this.sessions = sessions;
         return this;
     }
@@ -86,8 +112,21 @@ public class Hall {
     @Override
     public String toString() {
         return "Hall{" +
-                "seats=" + seats +
+                "id=" + id +
+                ", seats=" + seats +
                 ", hallNumber=" + hallNumber +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Hall hall = (Hall) o;
+        return getHallNumber() == hall.getHallNumber();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getHallNumber());
     }
 }

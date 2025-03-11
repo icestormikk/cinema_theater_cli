@@ -1,9 +1,12 @@
 package com.icestormikk.domain.cinema;
 
+import java.util.Objects;
+
 /**
  * Класс, представляющий билет на сеанс.
  */
 public class Ticket {
+    private int id;
     /** Сеанс, на который куплен билет. */
     private Session session;
     /** Номер места в зале. */
@@ -16,10 +19,33 @@ public class Ticket {
      * @param session Сеанс, на который куплен билет.
      * @param seat    Номер места в зале.
      */
-    public Ticket(Session session, int seat) {
+    public Ticket(Integer id, Session session, int seat) {
+        this.id = id;
         this.session = session;
         this.seat = seat;
         this.status = TicketStatus.Booked;
+    }
+
+    public Ticket(Session session, int seat) {
+        this(null, session, seat);
+    }
+
+    /**
+     * Получить идентификатор билета
+     * @return Идентификатор билета
+     */
+    public int getId() {
+        return id;
+    }
+
+    /**
+     * Обновить идентификатор билета
+     * @param id Новый идентификатор билета
+     * @return Оригинальный объект класса Ticket c обновлённым идентификатором
+     */
+    public Ticket setId(Integer id) {
+        this.id = id;
+        return this;
     }
 
     /**
@@ -89,9 +115,22 @@ public class Ticket {
     @Override
     public String toString() {
         return "Ticket{" +
-                "session=" + session.getMovie().getTitle() +
+                "id=" + id +
+                ", session=" + session.getMovie().getTitle() +
                 ", seat=" + seat +
                 ", status=" + status +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Ticket ticket = (Ticket) o;
+        return getSeat() == ticket.getSeat() && Objects.equals(getSession(), ticket.getSession());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getSession(), getSeat());
     }
 }

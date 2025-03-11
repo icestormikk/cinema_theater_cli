@@ -1,11 +1,13 @@
 package com.icestormikk.domain.cinema;
 
 import java.time.Duration;
+import java.util.Objects;
 
 /**
  * Класс, представляющий фильм.
  */
 public class Movie {
+    private int id;
     /** Название фильма. */
     private String title;
     /** Продолжительность фильма. */
@@ -22,11 +24,34 @@ public class Movie {
      * @param genre Жанр фильма.
      * @param rating Рейтинг фильма.
      */
-    public Movie(String title, String genre, Duration duration, double rating) {
+    public Movie(Integer id, String title, String genre, Duration duration, double rating) {
+        this.id = id;
         this.title = title;
         this.genre = genre;
         this.duration = duration;
         this.rating = rating;
+    }
+
+    public Movie(String title, String genre, Duration duration, double rating) {
+        this(null, title, genre, duration, rating);
+    }
+
+    /**
+     * Получить уникальный идентификатор фильма
+     * @return Уникальный идентификатор фильма
+     */
+    public int getId() {
+        return id;
+    }
+
+    /**
+     * Обновить уникальный идентификатор фильма
+     * @param id Новый уникальный идентификатор фильма
+     * @return Оригинальный объект класса Movie c обновлённым идентификатором
+     */
+    public Movie setId(int id) {
+        this.id = id;
+        return this;
     }
 
     /**
@@ -108,10 +133,23 @@ public class Movie {
     @Override
     public String toString() {
         return "Movie{" +
-                "title='" + title + '\'' +
+                "id=" + id +
+                ", title='" + title + '\'' +
                 ", genre='" + genre + '\'' +
                 ", durationInMin=" + duration +
                 ", rating=" + rating +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Movie movie = (Movie) o;
+        return Objects.equals(getTitle(), movie.getTitle());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getTitle());
     }
 }
