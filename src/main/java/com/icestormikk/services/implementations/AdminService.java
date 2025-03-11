@@ -18,7 +18,7 @@ public class AdminService implements IAdminService {
             }
         }
 
-        Admin admin = new Admin((long) (admins.size() + 1), firstName, lastName, username);
+        Admin admin = new Admin(firstName, lastName, username);
         admins.add(admin);
         return admin;
     }

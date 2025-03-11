@@ -1,5 +1,11 @@
 package com.icestormikk.domain.cinema;
 
+/**
+ * Статусы билета
+ */
 public enum TicketStatus {
-    Booked, Purchased
+    /** Билет забронирован */
+    Booked,
+    /** Билет куплен */
+    Purchased
 }
