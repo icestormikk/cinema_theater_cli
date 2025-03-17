@@ -121,16 +121,4 @@ public class Ticket {
                 ", status=" + status +
                 '}';
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Ticket ticket = (Ticket) o;
-        return getSeat() == ticket.getSeat() && Objects.equals(getSession(), ticket.getSession());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getSession(), getSeat());
-    }
 }

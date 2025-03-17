@@ -16,6 +16,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
@@ -826,12 +827,14 @@ public class CinemaCLI {
             System.out.print("Enter session movie title: ");
             String title = scanner.nextLine();
 
-            Session session = getSessionByMovieTitle(title);
+            List<Session> sessions = getSessionsByMovieTitle(title);
 
-            System.out.println("Available seats for session: " + session);
-            for (int seat = 1; seat <= session.getHall().getSeats(); seat++) {
-                if (!session.getBookedSeats().contains(seat)) {
-                    System.out.print(seat + " ");
+            for (Session session : sessions) {
+                System.out.println("Available seats for session: " + session);
+                for (int seat = 1; seat <= session.getHall().getSeats(); seat++) {
+                    if (!session.getBookedSeats().contains(seat)) {
+                        System.out.print(seat + " ");
+                    }
                 }
             }
             System.out.println();
@@ -863,7 +866,18 @@ public class CinemaCLI {
             System.out.print("Enter session movie title: ");
             String title = scanner.nextLine();
 
-            Session session = getSessionByMovieTitle(title);
+            List<Session> sessions = getSessionsByMovieTitle(title);
+            for (Session session : sessions) {
+                System.out.println(session);
+            }
+            System.out.print("Enter session id: ");
+            int id = Integer.parseInt(scanner.nextLine());
+
+            Session session = sessions
+                    .stream()
+                    .filter((s) -> s.getId() == id)
+                    .findFirst()
+                    .orElseThrow(() -> new Exception("Session not found!"));
 
             System.out.print("Enter seat number: ");
             int seat = Integer.parseInt(scanner.nextLine());
@@ -950,18 +964,15 @@ public class CinemaCLI {
         }
     }
 
-    private Session getSessionByMovieTitle(String title) {
-        Session session = null;
+    private List<Session> getSessionsByMovieTitle(String title) {
+        List<Session> sessions = new LinkedList<>();
         for (Session s: cinema.getSessions()) {
             if(s.getMovie().getTitle().equalsIgnoreCase(title)) {
-                session = s;
+                sessions.add(s);
             }
         }
 
-        if (session == null)
-            throw new RuntimeException("No session found for title: " + title);
-
-        return session;
+        return sessions;
     }
 
     private void isUser() {

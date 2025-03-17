@@ -140,7 +140,7 @@ public class User {
      * @param ticket Билет для отмены бронирования.
      */
     public void cancelTicket(Ticket ticket) {
-        tickets.remove(ticket);
+        tickets.remove(ticket.setStatus(TicketStatus.Canceled));
     }
 
     @Override

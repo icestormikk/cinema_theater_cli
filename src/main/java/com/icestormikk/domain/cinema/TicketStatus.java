@@ -7,5 +7,7 @@ public enum TicketStatus {
     /** Билет забронирован */
     Booked,
     /** Билет куплен */
-    Purchased
+    Purchased,
+    /** Билет отменён */
+    Canceled,
 }
