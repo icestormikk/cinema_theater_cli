@@ -2,74 +2,85 @@ package com.icestormikk.repositories.implementations;
 
 import com.icestormikk.domain.cinema.User;
 import com.icestormikk.repositories.UserRepository;
+import com.icestormikk.utils.StrictHashSet;
 
-import java.util.HashSet;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class UserRepositoryImpl implements UserRepository {
-    private final Set<User> users = new HashSet<>();
-    private static Integer nextId = 0;
+    private final StrictHashSet<User> users;
+    private final AtomicInteger nextId;
+
+    public UserRepositoryImpl() {
+        this.users = new StrictHashSet<>();
+        this.nextId = new AtomicInteger(0);
+    }
+
+    private UserRepositoryImpl(StrictHashSet<User> users, AtomicInteger nextId) {
+        this.users = users;
+        this.nextId = nextId;
+    }
 
     @Override
     public Set<User> findAll() {
-        return users;
+        return new StrictHashSet<>(users);
     }
 
     @Override
-    public User findById(int id) throws Exception {
-        for (User user : users) {
-            if (user.getId() == id) {
-                return user;
-            }
-        }
-
-        throw new Exception("User with such id was not found");
+    public Optional<User> findById(int id) {
+        return users.stream().filter(user -> user.getId() == id).findFirst();
     }
 
     @Override
-    public User findByUsername(String username) throws Exception {
-        for (User user : users) {
-            if (user.getUsername().equalsIgnoreCase(username)) {
-                return user;
-            }
-        }
-
-        throw new Exception("User with such username was not found");
+    public Optional<User> findByUsername(String username) {
+        return users.stream().filter(user -> user.getUsername().equalsIgnoreCase(username)).findFirst();
     }
 
     @Override
-    public User createUser(User user) throws Exception {
-        user.setId(nextId++);
+    public UserRepository save(User user) throws Exception {
+        User newUser = user.withId(nextId.getAndIncrement());
 
-        boolean success = users.add(user);
-
-        if (!success) {
+        if (users.contains(newUser)) {
             throw new Exception("User with such data already exists");
         }
 
-        return user;
+        StrictHashSet<User> newUsers = new StrictHashSet<>(users);
+        newUsers.add(newUser);
+
+        return new UserRepositoryImpl(newUsers, nextId);
     }
 
     @Override
-    public User updateUser(User user) throws Exception {
-        boolean success = users.remove(user);
+    public UserRepository updateById(Integer id, User user) throws Exception {
+        Optional<User> oldUser = findById(id);
 
-        if (!success) {
+        if (oldUser.isEmpty())
             throw new Exception("User with such data not found");
-        }
 
-        users.add(user);
-        return user;
+        User newUser = user.withFirstName(user.getFirstName()).withLastName(user.getLastName())
+                .withUsername(user.getUsername()).withTicketIds(user.getTicketIds());
+
+        StrictHashSet<User> updatedUsers = new StrictHashSet<>();
+        for (User u : users)
+            updatedUsers.add(Objects.equals(u.getId(), user.getId()) ? newUser : u);
+
+        return new UserRepositoryImpl(updatedUsers, nextId);
     }
 
     @Override
-    public void deleteById(int id) throws Exception {
-        User user = findById(id);
+    public UserRepository deleteById(Integer id) throws Exception {
+        Optional<User> userOpt = findById(id);
 
-        if(user == null) {
-            throw new Exception("Cannot find user to delete (id: " + id);
-        }
+        if (userOpt.isEmpty())
+            throw new Exception("User with such id not found");
 
-        users.remove(user);
+        StrictHashSet<User> updatedUsers = new StrictHashSet<>();
+        for (User u : users)
+            if(!Objects.equals(u.getId(), userOpt.get().getId()))
+                updatedUsers.add(u);
+
+        return new UserRepositoryImpl(updatedUsers, nextId);
     }
 }

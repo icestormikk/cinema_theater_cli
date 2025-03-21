@@ -2,13 +2,8 @@ package com.icestormikk.repositories;
 
 import com.icestormikk.domain.cinema.Admin;
 
-import java.util.Set;
+import java.util.Optional;
 
-public interface AdminRepository {
-    Set<Admin> findAll();
-    Admin findById(int id) throws Exception;
-    Admin findByUsername(String username) throws Exception;
-    Admin createAdmin(Admin admin) throws Exception;
-    Admin updateAdmin(Admin admin) throws Exception;
-    void deleteById(int id) throws Exception;
+public interface AdminRepository extends IRepository<Admin, Integer> {
+    Optional<Admin> findByUsername(String username);
 }

@@ -2,74 +2,85 @@ package com.icestormikk.repositories.implementations;
 
 import com.icestormikk.domain.cinema.Admin;
 import com.icestormikk.repositories.AdminRepository;
+import com.icestormikk.utils.StrictHashSet;
 
-import java.util.HashSet;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AdminRepositoryImpl implements AdminRepository {
-    private static final Set<Admin> admins = new HashSet<>();
-    private static Integer nextId = 0;
+    private final StrictHashSet<Admin> admins;
+    private final AtomicInteger nextId;
+
+    public AdminRepositoryImpl() {
+        this.admins = new StrictHashSet<>();
+        this.nextId = new AtomicInteger(0);
+    }
+
+    private AdminRepositoryImpl(StrictHashSet<Admin> admins, AtomicInteger nextId) {
+        this.admins = admins;
+        this.nextId = nextId;
+    }
 
     @Override
     public Set<Admin> findAll() {
-        return admins;
+        return Set.copyOf(admins);
     }
 
     @Override
-    public Admin findById(int id) throws Exception {
-        for (Admin admin : admins) {
-            if (admin.getId() == id) {
-                return admin;
-            }
-        }
-
-        throw new Exception("Admin with such id was not found");
+    public Optional<Admin> findById(int id) {
+        return admins.stream().filter(admin -> admin.getId() == id).findFirst();
     }
 
     @Override
-    public Admin findByUsername(String username) throws Exception {
-        for (Admin admin : admins) {
-            if (admin.getUsername().equalsIgnoreCase(username)) {
-                return admin;
-            }
-        }
-
-        throw new Exception("Admin with such username was not found");
+    public Optional<Admin> findByUsername(String username) {
+        return admins.stream().filter(admin -> admin.getUsername().equalsIgnoreCase(username)).findFirst();
     }
 
     @Override
-    public Admin createAdmin(Admin admin) throws Exception {
-        admin.setId(nextId++);
+    public AdminRepository save(Admin admin) throws Exception {
+        Admin newAdmin = (Admin) admin.withId(nextId.getAndIncrement());
 
-        boolean success = admins.add(admin);
-
-        if (!success) {
+        if (admins.contains(newAdmin)) {
             throw new Exception("Admin with such data already exists");
         }
 
-        return admin;
+        StrictHashSet<Admin> updatedAdmins = new StrictHashSet<>(admins);
+        updatedAdmins.add(newAdmin);
+
+        return new AdminRepositoryImpl(updatedAdmins, nextId);
     }
 
     @Override
-    public Admin updateAdmin(Admin admin) throws Exception {
-        boolean success = admins.remove(admin);
+    public AdminRepository updateById(Integer id, Admin admin) throws Exception {
+        Optional<Admin> oldAdmin = findById(id);
 
-        if (!success) {
-            throw new Exception("Admin with such data not found");
-        }
+        if (oldAdmin.isEmpty())
+            throw new Exception("Admin with such id does not exist");
 
-        admins.add(admin);
-        return admin;
+        Admin newAdmin = oldAdmin.get().withFirstName(admin.getFirstName()).withLastName(admin.getLastName())
+            .withUsername(admin.getUsername()).withTicketIds(admin.getTicketIds()).withCinemaIds(admin.getCinemaIds());
+
+        StrictHashSet<Admin> updatedAdmins = new StrictHashSet<>();
+        for (Admin a : admins)
+            updatedAdmins.add(Objects.equals(a.getId(), admin.getId()) ? newAdmin : a);
+
+        return new AdminRepositoryImpl(updatedAdmins, nextId);
     }
 
     @Override
-    public void deleteById(int id) throws Exception {
-        Admin admin = findById(id);
+    public AdminRepository deleteById(Integer id) throws Exception {
+        Optional<Admin> adminOpt = findById(id);
 
-        if (admin == null) {
+        if (adminOpt.isEmpty())
             throw new Exception("Admin with such id was not found");
-        }
 
-        admins.remove(admin);
+        StrictHashSet<Admin> updatedAdmins = new StrictHashSet<>();
+        for (Admin a : admins)
+            if (!Objects.equals(a.getId(), id))
+               updatedAdmins.add(a);
+
+        return new AdminRepositoryImpl(updatedAdmins, nextId);
     }
 }

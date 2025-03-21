@@ -2,13 +2,8 @@ package com.icestormikk.repositories;
 
 import com.icestormikk.domain.cinema.User;
 
-import java.util.Set;
+import java.util.Optional;
 
-public interface UserRepository {
-    Set<User> findAll();
-    User findById(int id) throws Exception;
-    User findByUsername(String username) throws Exception;
-    User createUser(User user) throws Exception;
-    User updateUser(User user) throws Exception;
-    void deleteById(int id) throws Exception;
+public interface UserRepository extends IRepository<User, Integer> {
+    Optional<User> findByUsername(String username);
 }
