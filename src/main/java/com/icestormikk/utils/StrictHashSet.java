@@ -1,21 +1,34 @@
 package com.icestormikk.utils;
 
+import java.util.Collection;
 import java.util.HashSet;
 
 public class StrictHashSet<T> extends HashSet<T> {
-    @Override
-    public boolean remove(Object element) {
+    public StrictHashSet() {}
+
+    public StrictHashSet(Collection<? extends T> c) {
+        super(c);
+    }
+
+    public StrictHashSet<T> without(Object element) {
         if (!contains(element)) {
             throw new RuntimeException("Element not found in the set.");
         }
-        return super.remove(element);
+
+        StrictHashSet<T> newSet = new StrictHashSet<>(this);
+        newSet.remove(element);
+
+        return newSet;
     }
 
-    @Override
-    public boolean add(T element) {
+    public StrictHashSet<T> with(T element) {
         if (contains(element)) {
             throw new RuntimeException("Element already exists in the set.");
         }
-        return super.add(element);
+
+        StrictHashSet<T> newSet = new StrictHashSet<>(this);
+        newSet.add(element);
+
+        return newSet;
     }
 }

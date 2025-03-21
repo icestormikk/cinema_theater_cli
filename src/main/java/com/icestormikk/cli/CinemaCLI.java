@@ -39,8 +39,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class CinemaCLI {
-    private final UserService userService;
-    private final AdminService adminService;
     private AdminService adminService;
     private CinemaService cinemaService;
     private HallService hallService;
@@ -48,6 +46,14 @@ public class CinemaCLI {
     private SessionService sessionService;
     private TicketService ticketService;
     private UserService userService;
+
+    private AdminService adminServiceSnapshot;
+    private CinemaService cinemaServiceSnapshot;
+    private HallService hallServiceSnapshot;
+    private MovieService movieServiceSnapshot;
+    private SessionService sessionServiceSnapshot;
+    private TicketService ticketServiceSnapshot;
+    private UserService userServiceSnapshot;
 
     private final Scanner scanner;
     private Integer cinemaId;
@@ -71,13 +77,35 @@ public class CinemaCLI {
         while (true) {
             showMainMenu();
             String command = scanner.nextLine();
-            handleMainMenuCommand(command);
             try {
+                saveSnapshot();
                 handleMainMenuCommand(command);
             } catch (Exception e) {
                 System.out.println("An error occurred while executing command: " + e.getMessage());
+                rollback();
             }
         }
+    }
+
+    private void saveSnapshot() {
+        adminServiceSnapshot = adminService;
+        cinemaServiceSnapshot = cinemaService;
+        hallServiceSnapshot = hallService;
+        movieServiceSnapshot = movieService;
+        sessionServiceSnapshot = sessionService;
+        ticketServiceSnapshot = ticketService;
+        userServiceSnapshot = userService;
+    }
+
+    private void rollback() {
+        adminService = adminServiceSnapshot;
+        cinemaService = cinemaServiceSnapshot;
+        hallService = hallServiceSnapshot;
+        movieService = movieServiceSnapshot;
+        sessionService = sessionServiceSnapshot;
+        ticketService = ticketServiceSnapshot;
+        userService = userServiceSnapshot;
+        System.out.println("Changes rolled back.");
     }
 
     private void showMainMenu() {
@@ -768,7 +796,7 @@ public class CinemaCLI {
 
     // TICKET
 
-    public void viewUserTickets() {
+    private void viewUserTickets() {
         isUser();
 
         System.out.println("Your tickets:");
