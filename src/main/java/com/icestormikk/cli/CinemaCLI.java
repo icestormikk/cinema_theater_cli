@@ -6,41 +6,77 @@ import com.icestormikk.domain.cinema.Hall;
 import com.icestormikk.domain.cinema.Movie;
 import com.icestormikk.domain.cinema.Session;
 import com.icestormikk.domain.cinema.Ticket;
+import com.icestormikk.domain.cinema.TicketStatus;
 import com.icestormikk.domain.cinema.User;
+import com.icestormikk.repositories.implementations.AdminRepositoryImpl;
+import com.icestormikk.repositories.implementations.CinemaRepositoryImpl;
+import com.icestormikk.repositories.implementations.HallRepositoryImpl;
+import com.icestormikk.repositories.implementations.MovieRepositoryImpl;
+import com.icestormikk.repositories.implementations.SessionRepositoryImpl;
+import com.icestormikk.repositories.implementations.TicketRepositoryImpl;
+import com.icestormikk.repositories.implementations.UserRepositoryImpl;
 import com.icestormikk.services.AdminService;
+import com.icestormikk.services.CinemaService;
+import com.icestormikk.services.HallService;
+import com.icestormikk.services.MovieService;
+import com.icestormikk.services.SessionService;
+import com.icestormikk.services.TicketService;
 import com.icestormikk.services.UserService;
 import com.icestormikk.services.implementations.AdminServiceImpl;
+import com.icestormikk.services.implementations.CinemaServiceImpl;
+import com.icestormikk.services.implementations.HallServiceImpl;
+import com.icestormikk.services.implementations.MovieServiceImpl;
+import com.icestormikk.services.implementations.SessionServiceImpl;
+import com.icestormikk.services.implementations.TicketServiceImpl;
 import com.icestormikk.services.implementations.UserServiceImpl;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class CinemaCLI {
     private final UserService userService;
     private final AdminService adminService;
+    private AdminService adminService;
+    private CinemaService cinemaService;
+    private HallService hallService;
+    private MovieService movieService;
+    private SessionService sessionService;
+    private TicketService ticketService;
+    private UserService userService;
+
     private final Scanner scanner;
-    private Cinema cinema;
-    private User user;
-    private Admin admin;
+    private Integer cinemaId;
+    private Integer userId;
+    private Integer adminId;
 
     public CinemaCLI() {
         this.scanner = new Scanner(System.in);
-        this.userService = new UserServiceImpl();
-        this.adminService = new AdminServiceImpl();
+        this.adminService = new AdminServiceImpl(new AdminRepositoryImpl());
+        this.cinemaService = new CinemaServiceImpl(new CinemaRepositoryImpl());
+        this.hallService = new HallServiceImpl(new HallRepositoryImpl());
+        this.movieService = new MovieServiceImpl(new MovieRepositoryImpl());
+        this.sessionService = new SessionServiceImpl(new SessionRepositoryImpl());
+        this.ticketService = new TicketServiceImpl(new TicketRepositoryImpl());
+        this.userService = new UserServiceImpl(new UserRepositoryImpl());
     }
 
+    @SuppressWarnings("InfiniteLoopStatement")
     public void start() {
         System.out.println("Welcome to the Cinema CLI");
         while (true) {
             showMainMenu();
             String command = scanner.nextLine();
             handleMainMenuCommand(command);
+            try {
+                handleMainMenuCommand(command);
+            } catch (Exception e) {
+                System.out.println("An error occurred while executing command: " + e.getMessage());
+            }
         }
     }
 
@@ -54,159 +90,173 @@ public class CinemaCLI {
 
     private void userMenu() {
         while (true) {
-            System.out.println("\nUser Menu:");
-            System.out.println("1. View All Movies");
-            System.out.println("2. Search Movie");
-            System.out.println("3. View All Sessions");
-            System.out.println("4. View Available Seats");
-            System.out.println("5. Book Ticket");
-            System.out.println("6. View My Tickets");
-            System.out.println("7. Cancel Ticket");
-            System.out.println("8. Purchase Ticket");
-            System.out.println("9. Logout");
-            String command = scanner.nextLine();
-            switch (command) {
-                case "1":
-                    viewAllMovies();
-                    break;
-                case "2":
-                    searchMovie();
-                    break;
-                case "3":
-                    viewAllSessions();
-                    break;
-                case "4":
-                    viewAvailableSeats();
-                    break;
-                case "5":
-                    bookTicket();
-                    break;
-                case "6":
-                    viewUserTickets();
-                    break;
-                case "7":
-                    cancelTicket();
-                    break;
-                case "8":
-                    purchaseTicket();
-                    break;
-                case "9":
-                    user = null;
-                    return;
-                default:
-                    System.out.println("Invalid command!");
+            try {
+                saveSnapshot();
+
+                System.out.println("\nUser Menu:");
+                System.out.println("1. View All Movies");
+                System.out.println("2. Search Movie");
+                System.out.println("3. View All Sessions");
+                System.out.println("4. View Available Seats");
+                System.out.println("5. Book Ticket");
+                System.out.println("6. View My Tickets");
+                System.out.println("7. Cancel Ticket");
+                System.out.println("8. Purchase Ticket");
+                System.out.println("9. Logout");
+                String command = scanner.nextLine();
+                switch (command) {
+                    case "1":
+                        viewAllMovies();
+                        break;
+                    case "2":
+                        searchMovie();
+                        break;
+                    case "3":
+                        viewAllSessions();
+                        break;
+                    case "4":
+                        viewAvailableSeats();
+                        break;
+                    case "5":
+                        bookTicket();
+                        break;
+                    case "6":
+                        viewUserTickets();
+                        break;
+                    case "7":
+                        cancelTicket();
+                        break;
+                    case "8":
+                        purchaseTicket();
+                        break;
+                    case "9":
+                        userId = null;
+                        return;
+                    default:
+                        System.out.println("Invalid command!");
+                }
+            } catch (Exception e) {
+                System.out.println("An error occurred while executing command: " + e.getMessage());
+                rollback();
             }
         }
     }
 
     private void adminMenu() {
         while (true) {
-            System.out.println("\nAdmin Menu:");
-            System.out.println("1. Create Cinema");
-            System.out.println("2. View All Cinemas");
-            System.out.println("3. Update Cinema");
-            System.out.println("4. Delete Cinema");
-            System.out.println("5. Add Hall");
-            System.out.println("6. View All Halls");
-            System.out.println("7. Update Hall");
-            System.out.println("8. Delete Hall");
-            System.out.println("9. Add Movie");
-            System.out.println("10. View All Movies");
-            System.out.println("11. Update Movie");
-            System.out.println("12. Delete Movie");
-            System.out.println("13. Add Session");
-            System.out.println("14. View All Sessions");
-            System.out.println("15. Update Session");
-            System.out.println("16. Delete Session");
-            System.out.println("17. View All Users");
-            System.out.println("18. Update User");
-            System.out.println("19. Delete User");
-            System.out.println("20. View All Admins");
-            System.out.println("21. Update Admin");
-            System.out.println("22. Delete Admin");
-            System.out.println("23. View Statistics");
-            System.out.println("24. Logout");
-            String command = scanner.nextLine();
-            switch (command) {
-                case "1":
-                    createCinema();
-                    break;
-                case "2":
-                    viewAllCinemas();
-                    break;
-                case "3":
-                    updateCinema();
-                    break;
-                case "4":
-                    deleteCinema();
-                    break;
-                case "5":
-                    addHall();
-                    break;
-                case "6":
-                    viewAllHalls();
-                    break;
-                case "7":
-                    updateHall();
-                    break;
-                case "8":
-                    deleteHall();
-                    break;
-                case "9":
-                    addMovie();
-                    break;
-                case "10":
-                    viewAllMovies();
-                    break;
-                case "11":
-                    editMovie();
-                    break;
-                case "12":
-                    deleteMovie();
-                    break;
-                case "13":
-                    addSession();
-                    break;
-                case "14":
-                    viewAllSessions();
-                    break;
-                case "15":
-                    updateSession();
-                    break;
-                case "16":
-                    deleteSession();
-                    break;
-                case "17":
-                    viewAllUsers();
-                    break;
-                case "18":
-                    updateUser();
-                    break;
-                case "19":
-                    deleteUser();
-                    break;
-                case "20":
-                    viewAllAdmins();
-                    break;
-                case "21":
-                    updateAdmin();
-                    break;
-                case "22":
-                    deleteAdmin();
-                    break;
-                case "23":
-                    viewStatistics();
-                    break;
-                case "24":
-                    admin = null;
-                    return;
-                default:
-                    System.out.println("Invalid command!");
+            try {
+                saveSnapshot();
+
+                System.out.println("\nAdmin Menu:");
+                System.out.println("1. Create Cinema");
+                System.out.println("2. View All Cinemas");
+                System.out.println("3. Update Cinema");
+                System.out.println("4. Delete Cinema");
+                System.out.println("5. Add Hall");
+                System.out.println("6. View All Halls");
+                System.out.println("7. Update Hall");
+                System.out.println("8. Delete Hall");
+                System.out.println("9. Add Movie");
+                System.out.println("10. View All Movies");
+                System.out.println("11. Update Movie");
+                System.out.println("12. Delete Movie");
+                System.out.println("13. Add Session");
+                System.out.println("14. View All Sessions");
+                System.out.println("15. Update Session");
+                System.out.println("16. Delete Session");
+                System.out.println("17. View All Users");
+                System.out.println("18. Update User");
+                System.out.println("19. Delete User");
+                System.out.println("20. View All Admins");
+                System.out.println("21. Update Admin");
+                System.out.println("22. Delete Admin");
+                System.out.println("23. View Statistics");
+                System.out.println("24. Logout");
+                String command = scanner.nextLine();
+                switch (command) {
+                    case "1":
+                        createCinema();
+                        break;
+                    case "2":
+                        viewAllCinemas();
+                        break;
+                    case "3":
+                        updateCinema();
+                        break;
+                    case "4":
+                        deleteCinema();
+                        break;
+                    case "5":
+                        addHall();
+                        break;
+                    case "6":
+                        viewAllHalls();
+                        break;
+                    case "7":
+                        updateHall();
+                        break;
+                    case "8":
+                        deleteHall();
+                        break;
+                    case "9":
+                        addMovie();
+                        break;
+                    case "10":
+                        viewAllMovies();
+                        break;
+                    case "11":
+                        editMovie();
+                        break;
+                    case "12":
+                        deleteMovie();
+                        break;
+                    case "13":
+                        addSession();
+                        break;
+                    case "14":
+                        viewAllSessions();
+                        break;
+                    case "15":
+                        updateSession();
+                        break;
+                    case "16":
+                        deleteSession();
+                        break;
+                    case "17":
+                        viewAllUsers();
+                        break;
+                    case "18":
+                        updateUser();
+                        break;
+                    case "19":
+                        deleteUser();
+                        break;
+                    case "20":
+                        viewAllAdmins();
+                        break;
+                    case "21":
+                        updateAdmin();
+                        break;
+                    case "22":
+                        deleteAdmin();
+                        break;
+                    case "23":
+                        viewStatistics();
+                        break;
+                    case "24":
+                        adminId = null;
+                        return;
+                    default:
+                        System.err.println("Invalid command!");
+                }
+            } catch (Exception e) {
+                System.out.println("An error occurred while executing command: " + e.getMessage());
+                rollback();
             }
         }
     }
 
-    private void handleMainMenuCommand(String command) {
+    private void handleMainMenuCommand(String command) throws Exception {
         switch (command) {
             case "1":
                 registerUser();
@@ -223,773 +273,617 @@ public class CinemaCLI {
             case "5":
                 System.exit(0);
             default:
-                System.out.println("Invalid command!");
+                System.err.println("Invalid command!");
         }
     }
 
     // USERS
 
-    private void registerUser() {
-        try {
-            System.out.print("Enter your first name: ");
-            String firstName = scanner.nextLine();
-            System.out.print("Enter your last name: ");
-            String lastName = scanner.nextLine();
-            System.out.print("Enter username: ");
-            String username = scanner.nextLine();
+    private void registerUser() throws Exception {
+        System.out.print("Enter your first name: ");
+        String firstName = scanner.nextLine();
+        System.out.print("Enter your last name: ");
+        String lastName = scanner.nextLine();
+        System.out.print("Enter username: ");
+        String username = scanner.nextLine();
 
-            User user = userService.createUser(firstName, lastName, username);
+        userService = userService.create(firstName, lastName, username);
 
-            if(user != null) {
-                System.out.println("Successfully registered user: " + username + " (" + firstName + " " + lastName + ")");
-            }
-        } catch (Exception e) {
-            System.err.println("Error registering user: " + e.getMessage());
-        }
+        if (userId != null)
+            System.out.println("Successfully registered user: " + userService.getByUsername(username));
     }
 
-    private void loginUser() {
-        try {
-            System.out.print("Enter your username: ");
-            String username = scanner.nextLine();
+    private void loginUser() throws Exception {
+        System.out.print("Enter your username: ");
+        String username = scanner.nextLine();
 
-            user = userService.getUserByName(username);
+        User loggedInUser = userService.getByUsername(username);
+        userId = loggedInUser.getId();
 
-            if (user != null) {
-                System.out.print("Logged in as User: " + user.getUsername());
-                userMenu();
-            } else {
-                System.out.println("User not found!");
-            }
-        } catch (Exception e) {
-            System.err.println("Error logging in: " + e.getMessage());
-        }
+        System.out.print("Logged in as User: " + loggedInUser.getUsername());
+
+        userMenu();
     }
 
     private void viewAllUsers() {
-        try {
-            isAdmin();
+        isAdmin();
 
-            System.out.println("All users:");
-            for (User user : userService.getUsers()) {
-                System.out.println(user);
-            }
-        } catch (Exception e) {
-            System.err.println("Error viewing all users: " + e.getMessage());
-        }
+        System.out.println("All users:");
+        for (User user : userService.getAll())
+            System.out.println(user);
     }
 
-    private void updateUser() {
-        try {
-            isAdmin();
+    private void updateUser() throws Exception {
+        isAdmin();
 
-            System.out.print("Enter user name to update: ");
-            String name = scanner.nextLine();
+        System.out.print("Enter user name to update: ");
+        String name = scanner.nextLine();
 
-            User user = userService.getUserByName(name);
-            if (user == null) {
-                System.out.println("User not found!");
-                return;
-            }
+        User user = userService.getByUsername(name);
 
-            System.out.print("Enter new first name: ");
-            String firstname = scanner.nextLine();
-            System.out.print("Enter new last name: ");
-            String lastName = scanner.nextLine();
-            System.out.print("Enter new username: ");
-            String username = scanner.nextLine();
+        System.out.print("Enter new first name: ");
+        String firstname = scanner.nextLine();
+        System.out.print("Enter new last name: ");
+        String lastName = scanner.nextLine();
+        System.out.print("Enter new username: ");
+        String username = scanner.nextLine();
 
-            userService.updateUserById(user.getId(), firstname, lastName, username);
-            System.out.println("User updated: " + user);
-        } catch (Exception e) {
-            System.err.println("Error updating user: " + e.getMessage());
-        }
+        userService = (UserService) userService.updateById(user.getId(), user.withFirstName(firstname).withLastName(lastName).withUsername(username));
+
+        System.out.println("User updated: " + userService.getByUsername(username));
     }
 
-    private void deleteUser() {
-        try {
-            isAdmin();
+    private void deleteUser() throws Exception {
+        isAdmin();
 
-            System.out.print("Enter user name to delete: ");
-            String name = scanner.nextLine();
-            User user = userService.getUserByName(name);
-            userService.deleteUserById(user.getId());
-        } catch (Exception e) {
-            System.err.println("Error deleting user: " + e.getMessage());
-        }
+        System.out.print("Enter user name to delete: ");
+        String name = scanner.nextLine();
+
+        userService = (UserService) userService.deleteById(userService.getByUsername(name).getId());
+
+        System.out.println("User deleted: " + name);
     }
 
     // ADMIN
 
-    private void registerAdmin() {
-        try {
-            System.out.print("Enter your first name: ");
-            String firstName = scanner.nextLine();
-            System.out.print("Enter your last name: ");
-            String lastName = scanner.nextLine();
-            System.out.print("Enter username: ");
-            String username = scanner.nextLine();
+    private void registerAdmin() throws Exception {
+        System.out.print("Enter your first name: ");
+        String firstName = scanner.nextLine();
+        System.out.print("Enter your last name: ");
+        String lastName = scanner.nextLine();
+        System.out.print("Enter username: ");
+        String username = scanner.nextLine();
 
-            adminService.createAdmin(firstName, lastName, username);
+        adminService = adminService.create(firstName, lastName, username);
 
-            System.out.println("Successfully registered admin: " + username + " (" + firstName + " " + lastName + ")");
-        } catch (Exception e) {
-            System.err.println("Error registering admin: " + e.getMessage());
-        }
+        System.out.println("Successfully registered admin: " + username + " (" + firstName + " " + lastName + ")");
     }
 
-    private void loginAdmin() {
-        try {
-            System.out.print("Enter your username: ");
-            String username = scanner.nextLine();
+    private void loginAdmin() throws Exception {
+        System.out.print("Enter your username: ");
+        String username = scanner.nextLine();
 
-            admin = adminService.getAdminByName(username);
+        Admin loggedInAdmin = adminService.getByUsername(username);
+        adminId = loggedInAdmin.getId();
 
-            System.out.print("Logged in as Admin: " + admin.getUsername());
+        System.out.print("Logged in as Admin: " + loggedInAdmin.getUsername());
 
-            adminMenu();
-        } catch (Exception e) {
-            System.err.println("Error logging admin: " + e.getMessage());
-        }
+        adminMenu();
     }
 
     private void viewAllAdmins() {
-        try {
-            isAdmin();
+        isAdmin();
 
-            System.out.println("All admins:");
-            for (Admin admin : adminService.getAdmins()) {
-                System.out.println(admin);
-            }
-        } catch (Exception e) {
-            System.err.println("Error viewing all admins: " + e.getMessage());
-        }
+        System.out.println("All admins:");
+        for (Admin admin : adminService.getAll())
+            System.out.println(admin);
     }
 
-    private void updateAdmin() {
-        try {
-            isAdmin();
+    private void updateAdmin() throws Exception {
+        isAdmin();
 
-            System.out.print("Enter admin name to update: ");
-            String name = scanner.nextLine();
-            Admin admin = adminService.getAdminByName(name);
-            if (admin == null) {
-                System.out.println("Admin not found!");
-                return;
-            }
+        System.out.print("Enter admin name to update: ");
+        String name = scanner.nextLine();
+        Admin admin = adminService.getByUsername(name);
 
-            System.out.print("Enter new first name: ");
-            String firstname = scanner.nextLine();
-            System.out.print("Enter new last name: ");
-            String lastName = scanner.nextLine();
-            System.out.print("Enter new user name: ");
-            String userName = scanner.nextLine();
+        System.out.print("Enter new first name: ");
+        String firstname = scanner.nextLine();
+        System.out.print("Enter new last name: ");
+        String lastName = scanner.nextLine();
+        System.out.print("Enter new user name: ");
+        String userName = scanner.nextLine();
 
-            adminService.updateAdminById(admin.getId(), firstname, lastName, userName);
+        Admin updatedAdmin = admin.withFirstName(firstname).withLastName(lastName).withUsername(userName);
+        adminService = (AdminService) adminService.updateById(admin.getId(), updatedAdmin);
 
-            System.out.println("Admin updated: " + admin);
-        } catch (Exception e) {
-            System.err.println("Error updating admin: " + e.getMessage());
-        }
+        System.out.println("Admin updated: " + updatedAdmin);
     }
 
-    private void deleteAdmin() {
-        try {
-            isAdmin();
+    private void deleteAdmin() throws Exception {
+        isAdmin();
 
-            System.out.print("Enter admin name to delete: ");
-            String name = scanner.nextLine();
+        System.out.print("Enter admin name to delete: ");
+        String name = scanner.nextLine();
 
-            Admin admin = adminService.getAdminByName(name);
+        Admin admin = adminService.getByUsername(name);
 
-            adminService.deleteAdminById(admin.getId());
-        } catch (Exception e) {
-            System.err.println("Error deleting admin: " + e.getMessage());
-        }
+        adminService = (AdminService) adminService.deleteById(adminService.getByUsername(name).getId());
+        if(Objects.equals(admin.getId(), adminId))
+            adminId = null;
+
+        System.out.println("Admin deleted: " + name);
     }
 
     // CINEMA
 
     private void viewAllCinemas() {
-        try {
-            isAdmin();
+        isAdmin();
 
-            System.out.println("All cinemas:");
-            for (Cinema cinema: admin.getCinemas()) {
-                System.out.println(cinema);
-            }
-        } catch (Exception e) {
-            System.err.println("Error viewing cinemas: " + e.getMessage());
-        }
+        System.out.println("All cinemas:");
+        for (Integer id: adminService.getById(adminId).getCinemaIds())
+            System.out.println(cinemaService.getById(id));
     }
 
-    private void createCinema() {
-        try {
-            isAdmin();
+    private void createCinema() throws Exception {
+        isAdmin();
 
-            System.out.print("Enter cinema name: ");
-            String cinemaName = scanner.nextLine();
-            System.out.print("Enter cinema address: ");
-            String cinemaAddress = scanner.nextLine();
+        System.out.print("Enter cinema title: ");
+        String cinemaTitle = scanner.nextLine();
+        System.out.print("Enter cinema address: ");
+        String cinemaAddress = scanner.nextLine();
 
-            Cinema newCinema = new Cinema(admin.getCinemas().size() + 1, cinemaName, cinemaAddress);
-            admin.getCinemas().add(newCinema);
-            cinema = newCinema;
+        cinemaService = cinemaService.create(cinemaTitle, cinemaAddress);
+        Cinema cinema = cinemaService.getByTitle(cinemaTitle);
+        cinemaId = cinema.getId();
 
-            System.out.println("Cinema created: " + cinema);
-        } catch (Exception e) {
-            System.err.println("Error creating cinema: " + e.getMessage());
-        }
+        adminService = (AdminService) adminService.updateById(adminId, adminService.getById(adminId).addCinemaId(cinemaId));
+
+        System.out.println("Cinema created: " + cinema);
     }
 
-    private void updateCinema() {
-        try {
-            isAdmin();
+    private void updateCinema() throws Exception {
+        isAdmin();
 
-            Set<Cinema> cinemas = admin.getCinemas();
+        System.out.print("Enter cinema title to update: ");
+        String title = scanner.nextLine();
 
-            System.out.print("Enter cinema title to update: ");
-            String title = scanner.nextLine();
+        Cinema cinema = cinemaService.getByTitle(title);
 
-            Cinema cinema = null;
-            for (Cinema c: cinemas) {
-                if(c.getTitle().equalsIgnoreCase(title)) {
-                    cinema = c;
+        System.out.print("Enter new cinema title: ");
+        String newTitle = scanner.nextLine();
+        System.out.print("Enter new address: ");
+        String address = scanner.nextLine();
+
+        cinema = cinema.withAddress(address).withTitle(newTitle);
+        cinemaService = (CinemaService) cinemaService.updateById(cinema.getId(), cinema);
+        adminService = (AdminService) adminService.updateById(adminId, adminService.getById(adminId).addCinemaId(cinema.getId()));
+
+        System.out.println("Cinema updated: " + cinema);
+    }
+
+    private void deleteCinema() throws Exception {
+        isAdmin();
+
+        System.out.print("Enter cinema name to delete: ");
+        String name = scanner.nextLine();
+
+        Cinema cinema = cinemaService.getByTitle(name);
+
+        for (Integer cinemaSessionId: cinema.getSessionIds()) {
+            for (User user: userService.getAll()) {
+                Set<Integer> userTicketIds = user.getTicketIds();
+                for (Integer ticketId: userTicketIds) {
+                    Ticket ticket = ticketService.getById(ticketId);
+                    if(ticket.getSessionId().equals(cinemaSessionId)) {
+                        ticketService = (TicketService) ticketService.deleteById(ticketId);
+                        userTicketIds.remove(ticketId);
+                    }
                 }
+                userService = (UserService) userService.updateById(user.getId(), user.withTicketIds(userTicketIds));
             }
-
-            if (cinema == null) {
-                System.out.println("Cinema not found!");
-                return;
-            }
-
-            System.out.print("Enter new cinema title: ");
-            String newTitle = scanner.nextLine();
-            System.out.print("Enter new address: ");
-            String address = scanner.nextLine();
-
-            cinemas.remove(cinema);
-            cinema.setAddress(address).setTitle(newTitle);
-            cinemas.add(cinema);
-
-            System.out.println("Cinema updated: " + cinema);
-        } catch (Exception e) {
-            System.err.println("Error updating cinema: " + e.getMessage());
         }
-    }
 
-    private void deleteCinema() {
-        try {
-            isAdmin();
+        cinemaService = (CinemaService) cinemaService.deleteById(cinema.getId());
+        if(cinema.getId() == cinemaId)
+            cinemaId = null;
 
-            System.out.print("Enter cinema name to delete: ");
-            String name = scanner.nextLine();
-
-            Cinema cinema = null;
-            for (Cinema c: admin.getCinemas()) {
-                if(c.getTitle().equalsIgnoreCase(name)) {
-                    cinema = c;
-                }
-            }
-
-            if (cinema != null) {
-                cinema.getSessions().forEach((session) ->
-                    userService.getUsers().forEach((user) ->
-                        user.getTickets().removeIf((ticket) -> ticket.getSession().equals(session))
-                    )
-                );
-
-                admin.getCinemas().remove(cinema);
-                System.out.println("Cinema deleted: " + cinema);
-            } else {
-                System.err.println("Cinema not found!");
-            }
-        } catch (Exception e) {
-            System.err.println("Error deleting cinema: " + e.getMessage());
-        }
+        adminService = (AdminService) adminService.updateById(adminId, adminService.getById(adminId).removeCinemaId(cinema.getId()));
+        System.out.println("Cinema deleted: " + cinema);
     }
 
     // HALL
 
-    private void addHall() {
-        try {
-            isCinemaSelected();
+    private void addHall() throws Exception {
+        isCinemaSelected();
 
-            System.out.print("Enter hall number: ");
-            int hallNumber = Integer.parseInt(scanner.nextLine());
-            System.out.print("Enter number of seats: ");
-            int seats = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter hall number: ");
+        int hallNumber = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter number of seats: ");
+        int seats = Integer.parseInt(scanner.nextLine());
 
-            Hall hall = new Hall(cinema.getHalls().size() + 1, hallNumber, seats);
-            cinema.addHall(hall);
+        hallService = hallService.create(cinemaId, hallNumber, seats);
+        Hall hall = hallService.getByCinemaIdAndNumber(cinemaId, hallNumber);
 
-            System.out.println("Hall added: " + hall);
-        } catch (Exception e) {
-            System.err.println("Error creating hall: " + e.getMessage());
-        }
+        cinemaService = (CinemaService) cinemaService.updateById(cinemaId, cinemaService.getById(cinemaId).addHallId(hall.getId()));
+
+        System.out.println("Hall added: " + hall);
     }
 
     private void viewAllHalls() {
-        try {
-            isCinemaSelected();
+        isCinemaSelected();
 
-            System.out.println("All halls:");
-            for(Hall hall: cinema.getHalls()) {
-                System.out.println(hall);
-            }
-        } catch (Exception e) {
-            System.err.println("Error viewing all halls: " + e.getMessage());
-        }
+        System.out.println("All halls:");
+        for(Integer hallId: cinemaService.getById(cinemaId).getHallIds())
+            System.out.println(hallService.getById(hallId));
     }
 
-    private void updateHall() {
-        try {
-            isCinemaSelected();
+    private void updateHall() throws Exception {
+        isCinemaSelected();
 
-            System.out.print("Enter hall number to update: ");
-            int hallNumber = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter hall number to update: ");
+        int hallNumber = Integer.parseInt(scanner.nextLine());
 
-            Hall hall = null;
-            for (Hall h: cinema.getHalls()) {
-                if(h.getHallNumber() == hallNumber) {
-                    hall = h;
-                }
-            }
-            if (hall == null) {
-                System.err.println("Hall not found!");
-                return;
-            }
+        Hall hall = hallService.getByCinemaIdAndNumber(cinemaId, hallNumber);
 
-            System.out.print("Enter new hall number: ");
-            int newHallNumber = Integer.parseInt(scanner.nextLine());
-            System.out.print("Enter new number of seats: ");
-            int seats = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter new hall number: ");
+        int newHallNumber = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter new number of seats: ");
+        int seats = Integer.parseInt(scanner.nextLine());
 
-            hall.setHallNumber(newHallNumber).setSeats(seats);
+        hall = hall.withHallNumber(newHallNumber).withSeats(seats);
+        hallService = (HallService) hallService.updateById(hall.getId(), hall);
 
-            System.out.println("Hall updated: " + hall);
-        } catch (Exception e) {
-            System.err.println("Error updating hall: " + e.getMessage());
-        }
+        System.out.println("Hall updated: " + hall);
     }
 
-    private void deleteHall() {
-        try {
-            isCinemaSelected();
+    private void deleteHall() throws Exception {
+        isCinemaSelected();
 
-            System.out.print("Enter hall number to delete: ");
-            int hallNumber = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter hall number to delete: ");
+        int hallNumber = Integer.parseInt(scanner.nextLine());
 
-            Hall hall = null;
-            for(Hall h: cinema.getHalls()) {
-                if(h.getHallNumber() == hallNumber) {
-                    hall = h;
+        Hall hall = hallService.getByCinemaIdAndNumber(cinemaId, hallNumber);
+
+        for (Integer hallSessionId: hall.getSessionIds()) {
+            sessionService = (SessionService) sessionService.deleteById(hallSessionId);
+            for (User user: userService.getAll()) {
+                Set<Integer> userTicketIds = user.getTicketIds();
+                for (Integer ticketId: userTicketIds) {
+                    Ticket ticket = ticketService.getById(ticketId);
+                    if(ticket.getSessionId().equals(hallSessionId)) {
+                        ticketService = (TicketService) ticketService.deleteById(ticketId);
+                        userTicketIds.remove(ticketId);
+                    }
                 }
+                userService = (UserService) userService.updateById(user.getId(), user.withTicketIds(userTicketIds));
             }
-
-            if (hall == null)
-                throw new Exception("Hall not found!");
-
-            List<Session> sessionsToRemove = new ArrayList<>();
-            for (Session session : cinema.getSessions()) {
-                if(session.getHall().equals(hall)) {
-                    sessionsToRemove.add(session);
-                }
-            }
-            for (Session session : sessionsToRemove) {
-                for (User user : userService.getUsers()) {
-                    Set<Ticket> tickets = user.getTickets();
-                    tickets.removeIf(ticket -> ticket.getSession().equals(session));
-                }
-                cinema.getSessions().remove(session);
-            }
-
-            cinema.getHalls().remove(hall);
-            System.out.println("Hall deleted: " + hall);
-        } catch (Exception e) {
-            System.err.println("Error deleting hall: " + e.getMessage());
         }
+
+        cinemaService = (CinemaService) cinemaService.updateById(cinemaId, cinemaService.getById(cinemaId).removeHallId(hall.getId()));
+        System.out.println("Hall deleted: " + hall);
     }
 
     // MOVIE
 
     private void viewAllMovies() {
-        try {
-            isCinemaSelected();
+        isCinemaSelected();
 
-            System.out.println("All movies:");
-            for (Movie m: cinema.getMovies()) {
-                System.out.println(m);
-            }
-        } catch (Exception e) {
-            System.err.println("Error viewing all movies: " + e.getMessage());
-        }
+        System.out.println("All movies:");
+        for (Integer movieId: cinemaService.getById(cinemaId).getMovieIds())
+            System.out.println(movieService.getById(movieId));
     }
 
-    private void addMovie() {
-        try {
-            isCinemaSelected();
+    private void addMovie() throws Exception {
+        isCinemaSelected();
 
-            System.out.print("Enter movie title: ");
-            String title = scanner.nextLine();
-            System.out.print("Enter movie duration (minutes): ");
-            int duration = Integer.parseInt(scanner.nextLine());
-            System.out.print("Enter movie genre: ");
-            String genre = scanner.nextLine();
-            System.out.print("Enter movie rating: ");
-            double rating = Double.parseDouble(scanner.nextLine());
+        System.out.print("Enter movie title: ");
+        String title = scanner.nextLine();
+        System.out.print("Enter movie duration (minutes): ");
+        int duration = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter movie genre: ");
+        String genre = scanner.nextLine();
+        System.out.print("Enter movie rating: ");
+        float rating = Float.parseFloat(scanner.nextLine());
 
-            Movie movie = new Movie(cinema.getMovies().size() + 1, title, genre, Duration.of(duration, ChronoUnit.MINUTES), rating);
-            cinema.addMovie(movie);
+        movieService = movieService.create(title, genre, Duration.of(duration, ChronoUnit.MINUTES), rating);
+        Movie movie = movieService.getByTitle(title);
 
-            System.out.println("Movie added: " + movie);
-        } catch (Exception e) {
-            System.err.println("Error adding movie: " + e.getMessage());
-        }
+        cinemaService = (CinemaService) cinemaService.updateById(cinemaId, cinemaService.getById(cinemaId).addMovieId(movie.getId()));
+
+        System.out.println("Movie added: " + movie);
     }
 
     private void searchMovie() {
-        try {
-            isCinemaSelected();
+        isCinemaSelected();
 
-            System.out.print("Enter movie title to search: ");
-            String title = scanner.nextLine();
+        System.out.print("Enter movie title to search: ");
+        String title = scanner.nextLine();
 
-            Movie movie = cinema.getMovieByTitle(title);
-
-            System.out.print("Successfully found a movie: " + movie);
-        } catch (Exception e) {
-            System.err.println("Error searching movie: " + e.getMessage());
-        }
+        System.out.print("Successfully found a movie: " + movieService.getByTitle(title));
     }
 
-    private void editMovie() {
-        try {
-            isAdmin();
-            isCinemaSelected();
+    private void editMovie() throws Exception {
+        isAdmin();
+        isCinemaSelected();
 
-            System.out.print("Enter movie title to edit: ");
-            String title = scanner.nextLine();
+        System.out.print("Enter movie title to edit: ");
+        String title = scanner.nextLine();
 
-            Movie movie = cinema.getMovieByTitle(title);
+        Movie movie = movieService.getByTitle(title);
 
-            System.out.print("Enter new title: ");
-            String newTitle = scanner.nextLine();
-            System.out.print("Enter new duration (minutes): ");
-            int duration = Integer.parseInt(scanner.nextLine());
-            System.out.print("Enter new genre: ");
-            String genre = scanner.nextLine();
-            System.out.print("Enter new rating: ");
-            double rating = Double.parseDouble(scanner.nextLine());
+        System.out.print("Enter new title: ");
+        String newTitle = scanner.nextLine();
+        System.out.print("Enter new duration (minutes): ");
+        int duration = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter new genre: ");
+        String genre = scanner.nextLine();
+        System.out.print("Enter new rating: ");
+        float rating = Float.parseFloat(scanner.nextLine());
 
-            movie.setTitle(newTitle).setDurationInMin(Duration.of(duration, ChronoUnit.MINUTES)).setGenre(genre).setRating(rating);
+        movie = movie.withTitle(newTitle).withDurationInMin(Duration.of(duration, ChronoUnit.MINUTES)).withGenre(genre).withRating(rating);
+        movieService = (MovieService) movieService.updateById(movie.getId(), movie);
 
-            System.out.println("Movie updated: " + movie);
-        } catch (Exception e) {
-            System.err.println("Error editing movie: " + e.getMessage());
-        }
+        System.out.println("Movie updated: " + movie);
     }
 
-    private void deleteMovie() {
-        try {
-            isCinemaSelected();
+    private void deleteMovie() throws Exception {
+        isCinemaSelected();
 
-            System.out.print("Enter movie title to delete: ");
-            String title = scanner.nextLine();
+        System.out.print("Enter movie title to delete: ");
+        String title = scanner.nextLine();
 
-            Movie movie = null;
-            for (Movie m: cinema.getMovies()) {
-                if (m.getTitle().equalsIgnoreCase(title)) {
-                    movie = m;
+        Movie movie = movieService.getByTitle(title);
+
+        for (Session session : sessionService.getAll()) {
+            if(session.getMovieId().equals(movie.getId())) {
+                for(User user: userService.getAll()) {
+                    Set<Integer> userTicketIds = user.getTicketIds();
+
+                    for(Integer ticketId: userTicketIds) {
+                        Ticket ticket = ticketService.getById(ticketId);
+                        if (ticket.getSessionId().equals(session.getId())) {
+                            ticketService = (TicketService) ticketService.deleteById(ticketId);
+                            userTicketIds.remove(ticketId);
+                        }
+                    }
+
+                    userService = (UserService) userService.updateById(user.getId(), user.withTicketIds(userTicketIds));
                 }
+
+                sessionService = (SessionService) sessionService.deleteById(session.getId());
             }
-
-            if(movie == null)
-                throw new Exception("Movie not found!");
-
-            cinema.getMovies().remove(movie);
-            System.out.println("Movie deleted: " + movie);
-        } catch (Exception e) {
-            System.err.println("Error deleting movie: " + e.getMessage());
         }
+
+        movieService = (MovieService) movieService.deleteById(movie.getId());
+        cinemaService = (CinemaService) cinemaService.updateById(cinemaId, cinemaService.getById(cinemaId).removeMovieId(movie.getId()));
+        System.out.println("Movie deleted: " + movie);
     }
 
     // SESSION
 
     private void viewAllSessions() {
-        try {
-            isCinemaSelected();
+        isCinemaSelected();
 
-            System.out.println("All sessions for cinema " + cinema.getTitle() + ": ");
-            for (Session s: cinema.getSessions()) {
-                System.out.println(s);
-            }
-        } catch (Exception e) {
-            System.err.println("Error viewing all sessions: " + e.getMessage());
-        }
+        Cinema cinema = cinemaService.getById(cinemaId);
+
+        System.out.println("All sessions for cinema " + cinema.getTitle() + ": ");
+        for (Integer sessionId: cinema.getSessionIds())
+            System.out.println(sessionService.getById(sessionId));
     }
 
-    private void addSession() {
-        try {
-            isCinemaSelected();
+    private void addSession() throws Exception {
+        isCinemaSelected();
 
-            System.out.print("Enter movie title: ");
-            String title = scanner.nextLine();
+        System.out.print("Enter movie title: ");
+        String title = scanner.nextLine();
 
-            Movie movie = null;
-            for (Movie m : cinema.getMovies()) {
-                if (m.getTitle().equalsIgnoreCase(title)) {
-                    movie = m;
+        Movie movie = movieService.getByTitle(title);
+
+        System.out.print("Enter hall number: ");
+        int hallNumber = Integer.parseInt(scanner.nextLine());
+
+        Hall hall = hallService.getByCinemaIdAndNumber(cinemaId, hallNumber);
+
+        System.out.print("Enter start time (format: 2007-12-03T10:15:30): ");
+        String startTime = scanner.nextLine();
+        System.out.print("Enter end time (format: 2007-12-03T11:15:30): ");
+        String endTime = scanner.nextLine();
+
+        sessionService = sessionService.create(movie.getId(), hall.getId(), LocalDateTime.parse(startTime), LocalDateTime.parse(endTime));
+        Session session = sessionService.getByMovieIdAndHallId(movie.getId(), hall.getId());
+
+        cinemaService = (CinemaService) cinemaService.updateById(cinemaId, cinemaService.getById(cinemaId).addSessionId(session.getId()));
+
+        System.out.println("Session added: " + session);
+    }
+
+    private void updateSession() throws Exception {
+        isCinemaSelected();
+
+        System.out.print("Enter session movie title to update: ");
+        String title = scanner.nextLine();
+        Movie movie = movieService.getByTitle(title);
+
+        System.out.print("Enter hall number: ");
+        int hallNumber = Integer.parseInt(scanner.nextLine());
+        Hall hall = hallService.getByCinemaIdAndNumber(cinemaId, hallNumber);
+
+        Session session = sessionService.getByMovieIdAndHallId(movie.getId(), hall.getId());
+
+        System.out.print("Enter new start time (format: 2007-12-03T10:15:30): ");
+        String startTime = scanner.nextLine();
+        System.out.print("Enter new end time (format: 2007-12-03T11:15:30): ");
+        String endTime = scanner.nextLine();
+
+        session = session.withStartTime(LocalDateTime.parse(startTime)).withEndTime(LocalDateTime.parse(endTime));
+        sessionService = (SessionService) sessionService.updateById(session.getId(), session);
+
+        System.out.println("Session updated: " + session);
+    }
+
+    private void deleteSession() throws Exception {
+        isAdmin();
+
+        System.out.print("Enter session id to delete: ");
+        int id = Integer.parseInt(scanner.nextLine());
+
+        Session session = sessionService.getById(id);
+
+        for (User user : userService.getAll()) {
+            Set<Integer> ticketIds = user.getTicketIds();
+
+            for (Integer ticketId: ticketIds) {
+                if (ticketService.getById(ticketId).getSessionId().equals(session.getId())) {
+                    ticketService = (TicketService) ticketService.deleteById(ticketId);
+                    ticketIds.remove(ticketId);
                 }
             }
-            if (movie == null)
-                throw new Exception("Movie not found!");
 
-            System.out.print("Enter hall number: ");
-            int hallNumber = Integer.parseInt(scanner.nextLine());
-
-            Hall hall = null;
-            for (Hall h : cinema.getHalls()) {
-                if (h.getHallNumber() == hallNumber) {
-                    hall = h;
-                }
-            }
-            if (hall == null)
-                throw new Exception("Hall not found!");
-
-            System.out.print("Enter start time (format: 2007-12-03T10:15:30): ");
-            String startTime = scanner.nextLine();
-            System.out.print("Enter end time (format: 2007-12-03T11:15:30): ");
-            String endTime = scanner.nextLine();
-
-            Session session = new Session(cinema.getSessions().size() + 1, movie, hall, LocalDateTime.parse(startTime), LocalDateTime.parse(endTime));
-            cinema.addSession(session);
-
-            System.out.println("Session added: " + session);
-        } catch (Exception e) {
-            System.err.println("Error adding session: " + e.getMessage());
+            userService = (UserService) userService.updateById(user.getId(), user.withTicketIds(ticketIds));
         }
-    }
 
-    private void updateSession() {
-        try {
-            isCinemaSelected();
-
-            System.out.print("Enter session movie title to update: ");
-            String title = scanner.nextLine();
-
-            Session session = cinema.getSessions().stream()
-                    .filter(s -> s.getMovie().getTitle().equals(title))
-                    .findFirst()
-                    .orElseThrow(() -> new Exception("Session not found!"));
-
-            System.out.print("Enter new start time: ");
-            String startTime = scanner.nextLine();
-            System.out.print("Enter new end time: ");
-            String endTime = scanner.nextLine();
-
-            session.setStartTime(LocalDateTime.parse(startTime)).setEndTime(LocalDateTime.parse(endTime));
-
-            System.out.println("Session updated: " + session);
-        } catch (Exception e) {
-            System.err.println("Error updating session: " + e.getMessage());
-        }
-    }
-
-    private void deleteSession() {
-        try {
-            isAdmin();
-
-            System.out.print("Enter session movie title to delete: ");
-            String title = scanner.nextLine();
-
-            Session session = cinema.getSessions().stream()
-                    .filter(s -> s.getMovie().getTitle().equals(title))
-                    .findFirst()
-                    .orElseThrow(() -> new Exception("Session not found!"));
-
-            for (User user : userService.getUsers()) {
-                var tickets = user.getTickets();
-                tickets.removeIf((ticket) -> ticket.getSession().equals(session));
-            }
-
-            cinema.getSessions().remove(session);
-            System.out.println("Session deleted: " + session);
-        } catch (Exception e) {
-            System.err.println("Error deleting session: " + e.getMessage());
-        }
+        sessionService = (SessionService) sessionService.deleteById(id);
+        cinemaService = (CinemaService) cinemaService.updateById(cinemaId, cinemaService.getById(cinemaId).removeSessionId(session.getId()));
+        System.out.println("Session deleted: " + session);
     }
 
     private void viewAvailableSeats() {
         isCinemaSelected();
 
-        try {
-            System.out.print("Enter session movie title: ");
-            String title = scanner.nextLine();
+        System.out.print("Enter movie title: ");
+        String title = scanner.nextLine();
 
-            List<Session> sessions = getSessionsByMovieTitle(title);
+        Set<Session> sessions = sessionService.getByMovieId(movieService.getByTitle(title).getId());
 
-            for (Session session : sessions) {
-                System.out.println("Available seats for session: " + session);
-                for (int seat = 1; seat <= session.getHall().getSeats(); seat++) {
-                    if (!session.getBookedSeats().contains(seat)) {
-                        System.out.print(seat + " ");
-                    }
+        for (Session session : sessions) {
+            System.out.println("Available seats for session: " + session);
+            for (int seat = 1; seat <= hallService.getById(session.getHallId()).getSeats(); seat++) {
+                if (!session.getBookedSeats().contains(seat)) {
+                    System.out.print(seat + " ");
                 }
             }
             System.out.println();
-        } catch (Exception e) {
-            System.err.println("Error viewing available seats: " + e.getMessage());
         }
     }
 
     // TICKET
 
     public void viewUserTickets() {
-        try {
-            isUser();
+        isUser();
 
-            System.out.println("Your tickets:");
-            for (Ticket ticket : user.getTickets()) {
-                System.out.println(ticket);
-            }
-        } catch (Exception e) {
-            System.err.println("Error viewing user tickets: " + e.getMessage());
-        }
+        System.out.println("Your tickets:");
+        for (Integer ticketId : userService.getById(userId).getTicketIds())
+            System.out.println(ticketService.getById(ticketId));
     }
 
-    private void bookTicket() {
-        try {
-            isUser();
-            isCinemaSelected();
+    private void bookTicket() throws Exception {
+        isUser();
+        isCinemaSelected();
 
-            System.out.print("Enter session movie title: ");
-            String title = scanner.nextLine();
+        System.out.print("Enter session movie title: ");
+        String title = scanner.nextLine();
 
-            List<Session> sessions = getSessionsByMovieTitle(title);
-            for (Session session : sessions) {
-                System.out.println(session);
-            }
-            System.out.print("Enter session id: ");
-            int id = Integer.parseInt(scanner.nextLine());
+        Set<Session> sessions = sessionService.getByMovieId(movieService.getByTitle(title).getId());
+        for (Session session : sessions)
+            System.out.println(session);
 
-            Session session = sessions
-                    .stream()
-                    .filter((s) -> s.getId() == id)
-                    .findFirst()
-                    .orElseThrow(() -> new Exception("Session not found!"));
+        System.out.print("Enter session id: ");
+        int sessionId = Integer.parseInt(scanner.nextLine());
+        Session session = sessionService.getById(sessionId);
 
-            System.out.print("Enter seat number: ");
-            int seat = Integer.parseInt(scanner.nextLine());
+        Hall hall = hallService.getById(session.getHallId());
 
-            session.bookSeat(seat);
+        System.out.print("Enter seat number: ");
+        int seat = Integer.parseInt(scanner.nextLine());
+        if(seat < 1 || seat > hall.getSeats())
+            System.out.println("Seat " + seat + " is out of bounds");
 
-            Ticket ticket = new Ticket(user.getTickets().size() + 1, session, seat);
-            user.bookTicket(ticket);
+        ticketService = ticketService.create(sessionId, seat);
+        Ticket ticket = ticketService.getBySessionIdAndSeat(sessionId, seat);
 
-            System.out.println("Ticket booked successfully: " + ticket);
-        } catch (Exception e) {
-            System.err.println("Error viewing user tickets: " + e.getMessage());
-        }
+        sessionService = (SessionService) sessionService.updateById(session.getId(), session.bookSeat(seat));
+        userService = (UserService) userService.updateById(userId, userService.getById(userId).addTicketId(ticket.getId()));
+
+        System.out.println("Ticket booked successfully: " + ticket);
     }
 
-    private void cancelTicket() {
-        try {
-            isUser();
+    private void cancelTicket() throws Exception {
+        isUser();
 
-            System.out.println("Your tickets:");
-            for(Ticket t: user.getTickets()) {
-                System.out.println(t);
-            }
+        System.out.println("Your tickets:");
+        Set<Ticket> userTickets = userService.getById(userId).getTicketIds().stream().map((id) -> ticketService.getById(id)).collect(Collectors.toSet());
+        for (Ticket ticket : userTickets)
+            System.out.println(ticket);
 
-            System.out.print("Enter the ticket id to cancel: ");
-            int ticketId = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter the ticket id to cancel: ");
+        Integer ticketId = Integer.parseInt(scanner.nextLine());
 
-            Ticket ticket = user.getTickets()
-                    .stream()
-                    .filter((t) -> t.getId() == ticketId)
-                    .findFirst()
-                    .orElseThrow(() -> new Exception("Ticket not found!"));
+        Ticket ticket = userTickets
+                .stream()
+                .filter((t) -> Objects.equals(t.getId(), ticketId))
+                .findFirst()
+                .orElseThrow(() -> new Exception("Ticket not found!"));
 
-            ticket.getSession().cancelSeat(ticket.getSeat());
-            user.cancelTicket(ticket);
+        Session session = sessionService.getById(ticket.getSessionId());
 
-            System.out.println("Ticket canceled: " + ticket);
-        } catch (Exception e) {
-            System.err.println("Error viewing user tickets: " + e.getMessage());
-        }
+        ticketService = (TicketService) ticketService.deleteById(ticketId);
+        sessionService = (SessionService) sessionService.updateById(session.getId(), session.cancelBookSeat(ticket.getSeat()));
+        userService = (UserService) userService.updateById(userId, userService.getById(userId).removeTicketId(ticketId));
+
+        System.out.println("Ticket canceled: " + ticket);
     }
 
-    private void purchaseTicket() {
-        try {
-            isUser();
+    private void purchaseTicket() throws Exception {
+        isUser();
 
-            System.out.println("Your booked tickets:");
-            for (Ticket t: user.getTickets()) {
-                System.out.println(t);
-            }
+        System.out.println("Your booked tickets:");
+        Set<Ticket> bookedUserTickets = userService.getById(userId).getTicketIds().stream()
+                .map((id) -> ticketService.getById(id))
+                .filter((ticket) -> ticket.getStatus().equals(TicketStatus.Booked))
+                .collect(Collectors.toSet());
+        for (Ticket ticket : bookedUserTickets)
+            System.out.println(ticket);
 
-            System.out.print("Enter the ticket id to purchase: ");
-            int ticketId = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter the ticket id to purchase: ");
+        int ticketId = Integer.parseInt(scanner.nextLine());
 
-            Ticket ticket = user.getTickets()
-                    .stream()
-                    .filter((t) -> t.getId() == ticketId)
-                    .findFirst()
-                    .orElseThrow(() -> new Exception("Ticket not found!"));
+        Ticket ticket = bookedUserTickets.stream().filter((t) -> t.getId() == ticketId)
+                .findFirst()
+                .orElseThrow(() -> new Exception("Ticket not found!"));
 
-            ticket.purchase();
-            System.out.println("Ticket purchased: " + ticket);
-        } catch (Exception e) {
-            System.err.println("Error viewing user tickets: " + e.getMessage());
-        }
+        ticketService = (TicketService) ticketService.updateById(ticketId, ticket.withStatus(TicketStatus.Purchased));
+        ticket = ticketService.getById(ticketId);
+
+        System.out.println("Ticket purchased: " + ticket);
     }
 
     // OTHER
 
     private void viewStatistics() {
-        try {
-            isAdmin();
-            isCinemaSelected();
+        isAdmin();
+        isCinemaSelected();
 
-            int totalBookedTickets = 0;
-            for (Session s: cinema.getSessions()) {
-                int bookedSeats = s.getBookedSeats().size();
-                totalBookedTickets += bookedSeats;
-            }
-
-            System.out.println("Total booked tickets: " + totalBookedTickets);
-        } catch (Exception e) {
-            System.err.println("Error viewing statistics: " + e.getMessage());
-        }
-    }
-
-    private List<Session> getSessionsByMovieTitle(String title) {
-        List<Session> sessions = new LinkedList<>();
-        for (Session s: cinema.getSessions()) {
-            if(s.getMovie().getTitle().equalsIgnoreCase(title)) {
-                sessions.add(s);
-            }
+        int totalBookedTickets = 0;
+        for (Integer sessionId: cinemaService.getById(cinemaId).getSessionIds()) {
+            int bookedSeats = sessionService.getById(sessionId).getBookedSeats().size();
+            totalBookedTickets += bookedSeats;
         }
 
-        return sessions;
+        System.out.println("Total booked tickets: " + totalBookedTickets);
     }
 
     private void isUser() {
-        if(user == null) {
+        if (userId == null)
             throw new RuntimeException("You must be logged in as User!");
-        }
     }
 
     private void isAdmin() {
-        if(admin == null) {
+        if (adminId == null)
             throw new RuntimeException("You must be logged in as User!");
-        }
     }
 
     private void isCinemaSelected() {
-        if(cinema == null) {
+        if (cinemaId == null)
             throw new RuntimeException("Select cinema first!");
-        }
     }
 }
