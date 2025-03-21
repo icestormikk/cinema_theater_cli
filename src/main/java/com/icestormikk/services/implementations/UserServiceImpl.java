@@ -2,40 +2,54 @@ package com.icestormikk.services.implementations;
 
 import com.icestormikk.domain.cinema.User;
 import com.icestormikk.repositories.UserRepository;
-import com.icestormikk.repositories.implementations.UserRepositoryImpl;
 import com.icestormikk.services.UserService;
 
-import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class UserServiceImpl implements UserService {
-    private static final UserRepository userRepository = new UserRepositoryImpl();
+    private final UserRepository userRepository;
+
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
-    public Set<User> getUsers() {
+    public Set<User> getAll() {
         return userRepository.findAll();
     }
 
     @Override
-    public User getUserByName(String name) throws Exception {
-        return userRepository.findByUsername(name);
+    public User getById(int id) {
+        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     @Override
-    public User createUser(String firstName, String lastName, String username) throws Exception {
+    public User getByUsername(String name) {
+        return userRepository.findByUsername(name).orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    @Override
+    public UserService create(String firstName, String lastName, String username) throws Exception {
         User user = new User(firstName, lastName, username);
-        return userRepository.createUser(user);
+        UserRepository updatedRepo = (UserRepository) userRepository.save(user);
+        return new UserServiceImpl(updatedRepo);
     }
 
     @Override
-    public User updateUserById(int id, String firstName, String lastName, String username) throws Exception {
-        User user = userRepository.findById(id);
-        user.setFirstName(firstName).setLastName(lastName).setUsername(username);
-        return userRepository.updateUser(user);
+    public UserService updateById(Integer id, User user) throws Exception {
+        Optional<User> existingUser = userRepository.findById(user.getId());
+
+        if (existingUser.isEmpty())
+            throw new Exception("User not found");
+
+        UserRepository updatedRepo = (UserRepository) userRepository.updateById(id, user);
+        return new UserServiceImpl(updatedRepo);
     }
 
     @Override
-    public void deleteUserById(int id) throws Exception {
-        userRepository.deleteById(id);
+    public UserService deleteById(Integer id) throws Exception {
+        UserRepository updatedRepo = (UserRepository) userRepository.deleteById(id);
+        return new UserServiceImpl(updatedRepo);
     }
 }

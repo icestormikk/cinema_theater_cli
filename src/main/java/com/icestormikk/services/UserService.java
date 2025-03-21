@@ -2,12 +2,9 @@ package com.icestormikk.services;
 
 import com.icestormikk.domain.cinema.User;
 
-import java.util.Set;
+import java.util.Optional;
 
-public interface UserService {
-    Set<User> getUsers();
-    User getUserByName(String name) throws Exception;
-    User createUser(String firstName, String lastName, String username) throws Exception;
-    User updateUserById(int id, String firstName, String lastName, String username) throws Exception;
-    void deleteUserById(int id) throws Exception;
+public interface UserService extends IService<User, Integer> {
+    User getByUsername(String username);
+    UserService create(String firstName, String lastName, String username) throws Exception;
 }
