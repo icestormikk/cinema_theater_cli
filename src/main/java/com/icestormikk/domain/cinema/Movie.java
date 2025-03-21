@@ -7,15 +7,15 @@ import java.util.Objects;
  * Класс, представляющий фильм.
  */
 public class Movie {
-    private int id;
+    private final Integer id;
     /** Название фильма. */
-    private String title;
+    private final String title;
     /** Продолжительность фильма. */
-    private Duration duration;
+    private final Duration duration;
     /** Жанр фильма. */
-    private String genre;
+    private final String genre;
     /** Рейтинг фильма. */
-    private double rating;
+    private final float rating;
 
     /**
      * Конструктор для создания фильма.
@@ -24,16 +24,12 @@ public class Movie {
      * @param genre Жанр фильма.
      * @param rating Рейтинг фильма.
      */
-    public Movie(Integer id, String title, String genre, Duration duration, double rating) {
+    public Movie(Integer id, String title, String genre, Duration duration, float rating) {
         this.id = id;
         this.title = title;
         this.genre = genre;
         this.duration = duration;
         this.rating = rating;
-    }
-
-    public Movie(String title, String genre, Duration duration, double rating) {
-        this(null, title, genre, duration, rating);
     }
 
     /**
@@ -49,9 +45,8 @@ public class Movie {
      * @param id Новый уникальный идентификатор фильма
      * @return Оригинальный объект класса Movie c обновлённым идентификатором
      */
-    public Movie setId(int id) {
-        this.id = id;
-        return this;
+    public Movie withId(int id) {
+        return new Movie(id, title, genre, duration, rating);
     }
 
     /**
@@ -67,9 +62,8 @@ public class Movie {
      * @param title Новое название фильма
      * @return Оригинальный объект класса Movie с новым названием
      */
-    public Movie setTitle(String title) {
-        this.title = title;
-        return this;
+    public Movie withTitle(String title) {
+        return new Movie(id, title, genre, duration, rating);
     }
 
     /**
@@ -85,9 +79,8 @@ public class Movie {
      * @param genre Новый жанр фильма
      * @return Оригинальный объект класса Movie с новым жанром
      */
-    public Movie setGenre(String genre) {
-        this.genre = genre;
-        return this;
+    public Movie withGenre(String genre) {
+        return new Movie(id, title, genre, duration, rating);
     }
 
     /**
@@ -103,16 +96,15 @@ public class Movie {
      * @param duration Новая продолжительность фильма
      * @return Оригинальный объект класса Movie с новой продолжительностью
      */
-    public Movie setDurationInMin(Duration duration) {
-        this.duration = duration;
-        return this;
+    public Movie withDurationInMin(Duration duration) {
+        return new Movie(id, title, genre, duration, rating);
     }
 
     /**
      * Получить рейтинг фильма
      * @return Рейтинг фильма
      */
-    public double getRating() {
+    public float getRating() {
         return rating;
     }
 
@@ -122,12 +114,11 @@ public class Movie {
      * @return Оригинальный объект класса Movie с новым рейтингом
      * @throws IllegalArgumentException Если новое значение рейтинга отрицательное
      */
-    public Movie setRating(double rating) {
+    public Movie withRating(float rating) {
         if(rating < 0.0)
             throw new IllegalArgumentException("Rating must be a positive number");
 
-        this.rating = rating;
-        return this;
+        return new Movie(id, title, genre, duration, rating);
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.icestormikk.domain.cinema;
 
 import com.icestormikk.utils.StrictHashSet;
 
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
@@ -9,28 +10,26 @@ import java.util.Set;
  * Класс, описывающий зал кинотеатра
  */
 public class Hall {
-    private int id;
+    private final Integer id;
+    private final Integer cinemaId;
     /** Номер зала кинотеатра */
-    private int hallNumber;
+    private final int hallNumber;
     /** Количество мест в зале. */
-    private int seats;
+    private final int seats;
     /** Список сеансов, проходящих в зале. */
-    private Set<Session> sessions;
+    private final Set<Integer> sessionIds;
 
     /**
      * Конструктор для создания зала.
      * @param hallNumber Номер зала.
      * @param seats Количество мест в зале.
      */
-    public Hall(Integer id, int hallNumber, int seats) {
+    public Hall(Integer id, Integer cinemaId, int hallNumber, int seats, Set<Integer> sessionIds) {
         this.id = id;
+        this.cinemaId = cinemaId;
         this.hallNumber = hallNumber;
         this.seats = seats;
-        this.sessions = new StrictHashSet<>();
-    }
-
-    public Hall(int hallNumber, int seats) {
-        this(null, hallNumber, seats);
+        this.sessionIds = Collections.unmodifiableSet(sessionIds);
     }
 
     /**
@@ -46,9 +45,16 @@ public class Hall {
      * @param id Новый уникальный идентификатор зала
      * @return Оригинальный объект класса Hall c обновлённым идентификатором
      */
-    public Hall setId(int id) {
-        this.id = id;
-        return this;
+    public Hall withId(int id) {
+        return new Hall(id, cinemaId, hallNumber, seats, sessionIds);
+    }
+
+    public Integer getCinemaId() {
+        return cinemaId;
+    }
+
+    public Hall withCinemaId(Integer cinemaId) {
+        return new Hall(id, cinemaId, hallNumber, seats, sessionIds);
     }
 
     /**
@@ -64,9 +70,8 @@ public class Hall {
      * @param hallNumber Новый номер зала кинотеатра
      * @return Оригинальный объект класса Hall с новым номером зала
      */
-    public Hall setHallNumber(int hallNumber) {
-        this.hallNumber = hallNumber;
-        return this;
+    public Hall withHallNumber(int hallNumber) {
+        return new Hall(id, cinemaId, hallNumber, seats, sessionIds);
     }
 
     /**
@@ -83,38 +88,35 @@ public class Hall {
      * @return Оригинальный объект класса Hall с новым количеством мест в зале
      * @throws IllegalArgumentException Если новое количество мест отрицательно
      */
-    public Hall setSeats(int seats) {
+    public Hall withSeats(int seats) {
         if(seats < 0)
             throw new IllegalArgumentException("Seats must be greater than 0");
-
-        this.seats = seats;
-        return this;
+        return new Hall(id, cinemaId, hallNumber, seats, sessionIds);
     }
 
     /**
      * Получить список сеансов, проходящих в зале.
      * @return Список сеансов, проходящих в зале.
      */
-    public Set<Session> getSessions() {
-        return sessions;
+    public StrictHashSet<Integer> getSessionIds() {
+        return new StrictHashSet<>(sessionIds);
     }
 
     /**
      * Обновить список сеансов, проходящих в зале.
-     * @param sessions Новый список сеансов, проходящих в зале.
+     * @param sessionIds Новый список сеансов, проходящих в зале.
      * @return Оригинальный объект класса Hall с новым списком сеансов
      */
-    public Hall setSessions(Set<Session> sessions) {
-        this.sessions = sessions;
-        return this;
+    public Hall withSessionIds(StrictHashSet<Integer> sessionIds) {
+        return new Hall(id, cinemaId, hallNumber, seats, sessionIds);
     }
 
     @Override
     public String toString() {
         return "Hall{" +
-                "id=" + id +
-                ", seats=" + seats +
+                "cinemaId=" + cinemaId +
                 ", hallNumber=" + hallNumber +
+                ", seats=" + seats +
                 '}';
     }
 
@@ -122,11 +124,11 @@ public class Hall {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Hall hall = (Hall) o;
-        return getHallNumber() == hall.getHallNumber();
+        return getHallNumber() == hall.getHallNumber() && Objects.equals(getCinemaId(), hall.getCinemaId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getHallNumber());
+        return Objects.hash(getCinemaId(), getHallNumber());
     }
 }

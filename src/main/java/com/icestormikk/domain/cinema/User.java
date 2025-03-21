@@ -17,7 +17,7 @@ public class User {
     /** Никнейм пользователя. */
     private String username;
     /** Список билетов, забронированных пользователем. */
-    public Set<Ticket> tickets;
+    public Set<Integer> ticketIds;
 
     /**
      * Конструктор для создания пользователя.
@@ -25,16 +25,20 @@ public class User {
      * @param lastName Фамилия пользователя.
      * @param username Никнейм пользователя.
      */
-    public User(Integer id, String firstName, String lastName, String username) {
+    public User(Integer id, String firstName, String lastName, String username, Set<Integer> ticketIds) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
-        this.tickets = new StrictHashSet<>();
+        this.ticketIds = ticketIds;
+    }
+
+    public User(String firstName, String lastName, String username, Set<Integer> ticketIds) {
+        this(null, firstName, lastName, username, ticketIds);
     }
 
     public User(String firstName, String lastName, String username) {
-        this(null, firstName, lastName, username);
+        this(null, firstName, lastName, username, new StrictHashSet<>());
     }
 
     /**
@@ -50,7 +54,7 @@ public class User {
      * @param id Новый идентификатор пользователя
      * @return Оригинальный объект класса User c обновлённым идентификатором
      */
-    public User setId(Integer id) {
+    public User withId(Integer id) {
         this.id = id;
         return this;
     }
@@ -68,9 +72,8 @@ public class User {
      * @param firstName Новое имя пользователя
      * @return Оригинальный объект класса User с новым именем пользователя
      */
-    public User setFirstName(String firstName) {
-        this.firstName = firstName;
-        return this;
+    public User withFirstName(String firstName) {
+        return new User(id, firstName, lastName, username, ticketIds);
     }
 
     /**
@@ -86,9 +89,8 @@ public class User {
      * @param lastName Новая фамилия пользователя
      * @return Оригинальный объект класса User с новой фамилией пользователя
      */
-    public User setLastName(String lastName) {
-        this.lastName = lastName;
-        return this;
+    public User withLastName(String lastName) {
+        return new User(id, firstName, lastName, username, ticketIds);
     }
 
     /**
@@ -104,43 +106,37 @@ public class User {
      * @param username Новый никнейм пользователя
      * @return Оригинальный объект класса User с новым никнеймом пользователя
      */
-    public User setUsername(String username) {
-        this.username = username;
-        return this;
+    public User withUsername(String username) {
+        return new User(id, firstName, lastName, username, ticketIds);
     }
 
     /**
      * Возвращает список билетов пользователя.
      * @return Список билетов пользователя.
      */
-    public Set<Ticket> getTickets() {
-        return tickets;
+    public Set<Integer> getTicketIds() {
+        return new StrictHashSet<>(ticketIds);
     }
 
     /**
      * Обновляет список билетов пользователя.
-     * @param tickets Список билетов пользователя
+     * @param ticketIds Список билетов пользователя
      * @return Оригинальный объект класса User с новым списком билетов
      */
-    public User setTickets(Set<Ticket> tickets) {
-        this.tickets = tickets;
-        return this;
+    public User withTicketIds(Set<Integer> ticketIds) {
+        return new User(id, firstName, lastName, username, ticketIds);
     }
 
-    /**
-     * Бронирует билет для пользователя.
-     * @param ticket Билет для бронирования.
-     */
-    public void bookTicket(Ticket ticket) {
-        tickets.add(ticket);
+    public User addTicketId(Integer ticketId) {
+        Set<Integer> newTicketIds = new StrictHashSet<>(ticketIds);
+        newTicketIds.add(ticketId);
+        return new User(id, firstName, lastName, username, newTicketIds);
     }
 
-    /**
-     * Отменяет бронирование билета.
-     * @param ticket Билет для отмены бронирования.
-     */
-    public void cancelTicket(Ticket ticket) {
-        tickets.remove(ticket.setStatus(TicketStatus.Canceled));
+    public User removeTicketId(Integer ticketId) {
+        Set<Integer> newTicketIds = new StrictHashSet<>(ticketIds);
+        newTicketIds.remove(ticketId);
+        return new User(id, firstName, lastName, username, newTicketIds);
     }
 
     @Override

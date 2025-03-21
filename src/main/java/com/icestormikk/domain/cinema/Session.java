@@ -3,6 +3,7 @@ package com.icestormikk.domain.cinema;
 import com.icestormikk.utils.StrictHashSet;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
@@ -10,36 +11,33 @@ import java.util.Set;
  * Класс, представляющий сеанс в кинотеатре.
  */
 public class Session {
-    private int id;
+    private final Integer id;
     /** Фильм, который показывают на сеансе. */
-    private Movie movie;
+    private final Integer movieId;
     /** Зал, в котором проходит сеанс. */
-    private Hall hall;
+    private final Integer hallId;
     /** Время начала сеанса. */
-    private LocalDateTime startTime;
+    private final LocalDateTime startTime;
     /** Время окончания сеанса. */
-    private LocalDateTime endTime;
+    private final LocalDateTime endTime;
     /** Список забронированных мест на сеанс. */
-    private Set<Integer> bookedSeats;
+    private final Set<Integer> bookedSeats;
 
     /**
      * Конструктор для создания сеанса.
-     * @param movie     Фильм, который показывают на сеансе.
-     * @param hall      Зал, в котором проходит сеанс.
+     *
+     * @param movieId     Фильм, который показывают на сеансе.
+     * @param hallId    Зал, в котором проходит сеанс.
      * @param startTime Время начала сеанса.
      * @param endTime   Время окончания сеанса.
      */
-    public Session(Integer id, Movie movie, Hall hall, LocalDateTime startTime, LocalDateTime endTime) {
+    public Session(Integer id, Integer movieId, Integer hallId, LocalDateTime startTime, LocalDateTime endTime, Set<Integer> bookedSeats) {
         this.id = id;
-        this.movie = movie;
-        this.hall = hall;
+        this.movieId = movieId;
+        this.hallId = hallId;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.bookedSeats = new StrictHashSet<>();
-    }
-
-    public Session(Movie movie, Hall hall, LocalDateTime startTime, LocalDateTime endTime) {
-        this(null, movie, hall, startTime, endTime);
+        this.bookedSeats = Collections.unmodifiableSet(new StrictHashSet<>(bookedSeats));
     }
 
     /**
@@ -55,27 +53,42 @@ public class Session {
      * @param id Новый идентификатор сессии
      * @return Оригинальный объект класса Session c обновлённым идентификатором
      */
-    public Session setId(int id) {
-        this.id = id;
-        return this;
+    public Session withId(int id) {
+        return new Session(id, movieId, hallId, startTime, endTime, bookedSeats);
     }
 
     /**
      * Получить фильм, который показывают на сеансе.
      * @return Фильм, который показывают на сеансе.
      */
-    public Movie getMovie() {
-        return movie;
+    public Integer getMovieId() {
+        return movieId;
     }
 
     /**
      * Обновить фильм, который показывают на сеансе.
-     * @param movie Новый фильм
+     * @param movieId Новый фильм
      * @return Оригинальный объект класса Session c новым значением поля movie
      */
-    public Session setMovie(Movie movie) {
-        this.movie = movie;
-        return this;
+    public Session withMovieId(Integer movieId) {
+        return new Session(id, movieId, hallId, startTime, endTime, bookedSeats);
+    }
+
+    /**
+     * Получить зал, в котором проходит сеанс
+     * @return Зал, в котором проходит сеанс
+     */
+    public Integer getHallId() {
+        return hallId;
+    }
+
+    /**
+     * Обновить зал, в котором проходит сеанс
+     * @param hallId Новый зал
+     * @return Оригинальный объект класса Session c новым значением поля hall
+     */
+    public Session withHallId(Integer hallId) {
+        return new Session(id, movieId, hallId, startTime, endTime, bookedSeats);
     }
 
     /**
@@ -91,9 +104,8 @@ public class Session {
      * @param startTime Новое время начала сеанса
      * @return Оригинальный объект класса Session c новым временем начала сеанса
      */
-    public Session setStartTime(LocalDateTime startTime) {
-        this.startTime = startTime;
-        return this;
+    public Session withStartTime(LocalDateTime startTime) {
+        return new Session(id, movieId, hallId, startTime, endTime, bookedSeats);
     }
 
     /**
@@ -109,35 +121,16 @@ public class Session {
      * @param endTime Новое время конца сеанса
      * @return Оригинальный объект класса Session c новым временем конца сеанса
      */
-    public Session setEndTime(LocalDateTime endTime) {
-        this.endTime = endTime;
-        return this;
-    }
-
-    /**
-     * Получить зал, в котором проходит сеанс
-     * @return Зал, в котором проходит сеанс
-     */
-    public Hall getHall() {
-        return hall;
-    }
-
-    /**
-     * Обновить зал, в котором проходит сеанс
-     * @param hall Новый зал
-     * @return Оригинальный объект класса Session c новым значением поля hall
-     */
-    public Session setHall(Hall hall) {
-        this.hall = hall;
-        return this;
+    public Session withEndTime(LocalDateTime endTime) {
+        return new Session(id, movieId, hallId, startTime, endTime, bookedSeats);
     }
 
     /**
      * Получить список забронированных мест.
      * @return Список забронированных мест.
      */
-    public Set<Integer> getBookedSeats() {
-        return this.bookedSeats;
+    public StrictHashSet<Integer> getBookedSeats() {
+        return new StrictHashSet<>(bookedSeats);
     }
 
     /**
@@ -145,48 +138,34 @@ public class Session {
      * @param bookedSeats Новый список забронированных мест
      * @return  Оригинальный объект класса Session c новым списком забронированных мест
      */
-    public Session setBookedSeats(Set<Integer> bookedSeats) {
-        this.bookedSeats = bookedSeats;
-        return this;
+    public Session withBookedSeats(StrictHashSet<Integer> bookedSeats) {
+        return new Session(id, movieId, hallId, startTime, endTime, bookedSeats);
     }
 
-    /**
-     * Бронирует место на сеансе.
-     * @param seat Номер места для бронирования.
-     */
-    public void bookSeat(int seat) {
-        boolean isAlreadyBookedSeat = bookedSeats.contains(seat);
-
-        if(isAlreadyBookedSeat)
+    public Session bookSeat(int seat) {
+        if (bookedSeats.contains(seat))
             throw new RuntimeException("Booked seat " + seat + " is already booked");
 
-        if(seat < 1 || seat > hall.getSeats())
-            throw new RuntimeException("Booked seat " + seat + " is not in hall " + hall);
-
-        bookedSeats.add(seat);
+        Set<Integer> newBookedSeats = new StrictHashSet<>(bookedSeats);
+        newBookedSeats.add(seat);
+        return new Session(id, movieId, hallId, startTime, endTime, newBookedSeats);
     }
 
-    /**
-     * Отменяет бронирование места на сеансе.
-     * @param seat Номер места для отмены бронирования.
-     * @return true, если отмена прошла успешно, иначе false.
-     */
-    public boolean cancelSeat(int seat) {
-        for (Integer bookedSeat : bookedSeats) {
-            if(bookedSeat == seat) {
-                return bookedSeats.remove(bookedSeat);
-            }
-        }
+    public Session cancelBookSeat(int seat) {
+        if (!bookedSeats.contains(seat))
+            throw new RuntimeException("Booked seat " + seat + " is not booked");
 
-        return false;
+        Set<Integer> newBookedSeats = new StrictHashSet<>(bookedSeats);
+        newBookedSeats.remove(seat);
+        return new Session(id, movieId, hallId, startTime, endTime, newBookedSeats);
     }
 
     @Override
     public String toString() {
         return "Session{" +
                 "id=" + id +
-                ", movie=" + movie.getTitle() +
-                ", hall=" + hall.getHallNumber() +
+                ", movieId=" + movieId +
+                ", hallId=" + hallId +
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +
                 ", bookedSeats=" + bookedSeats +
@@ -197,11 +176,11 @@ public class Session {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Session session = (Session) o;
-        return Objects.equals(getMovie(), session.getMovie()) && Objects.equals(getHall(), session.getHall()) && Objects.equals(getStartTime(), session.getStartTime()) && Objects.equals(getEndTime(), session.getEndTime()) && Objects.equals(getBookedSeats(), session.getBookedSeats());
+        return Objects.equals(getMovieId(), session.getMovieId()) && Objects.equals(getHallId(), session.getHallId()) && Objects.equals(getStartTime(), session.getStartTime()) && Objects.equals(getEndTime(), session.getEndTime()) && Objects.equals(getBookedSeats(), session.getBookedSeats());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getMovie(), getHall(), getStartTime(), getEndTime(), getBookedSeats());
+        return Objects.hash(getMovieId(), getHallId(), getStartTime(), getEndTime(), getBookedSeats());
     }
 }

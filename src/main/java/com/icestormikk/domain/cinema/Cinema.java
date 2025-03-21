@@ -2,6 +2,7 @@ package com.icestormikk.domain.cinema;
 
 import com.icestormikk.utils.StrictHashSet;
 
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
@@ -9,17 +10,17 @@ import java.util.Set;
  * Класс, описывающий кинотеатры, в котором можно посещать киносеансы
  */
 public class Cinema {
-    private int id;
+    private Integer id;
     /** Название кинотеатра. */
-    private String title;
+    private final String title;
     /** Адрес кинотеатра. */
-    private String address;
+    private final String address;
     /** Список залов в кинотеатре. */
-    private Set<Hall> halls;
+    private final Set<Integer> hallIds;
     /** Список фильмов, доступных в кинотеатре. */
-    private Set<Movie> movies;
+    private final Set<Integer> movieIds;
     /** Список сеансов в кинотеатре. */
-    private Set<Session> sessions;
+    private final Set<Integer> sessionIds;
 
     /**
      * Конструктор для создания кинотеатра.
@@ -27,17 +28,13 @@ public class Cinema {
      * @param title   Название кинотеатра.
      * @param address Адрес кинотеатра.
      */
-    public Cinema(Integer id, String title, String address) {
+    public Cinema(Integer id, String title, String address, Set<Integer> hallIds, Set<Integer> movieIds, Set<Integer> sessionIds) {
         this.id = id;
         this.title = title;
         this.address = address;
-        this.halls = new StrictHashSet<>();
-        this.movies = new StrictHashSet<>();
-        this.sessions = new StrictHashSet<>();
-    }
-
-    public Cinema(String title, String address) {
-        this(null, title, address);
+        this.hallIds = Collections.unmodifiableSet(hallIds);
+        this.movieIds = Collections.unmodifiableSet(movieIds);
+        this.sessionIds = Collections.unmodifiableSet(sessionIds);
     }
 
     /**
@@ -53,7 +50,7 @@ public class Cinema {
      * @param id Новый уникальный идентификатор кинотеатра
      * @return Оригинальный объект класса Cinema c обновлённым идентификатором
      */
-    public Cinema setId(int id) {
+    public Cinema withId(int id) {
         this.id = id;
         return this;
     }
@@ -71,9 +68,8 @@ public class Cinema {
      * @param title Новое название
      * @return Оригинальный объект класса Cinema с новым названием
      */
-    public Cinema setTitle(String title) {
-        this.title = title;
-        return this;
+    public Cinema withTitle(String title) {
+        return new Cinema(id, title, address, hallIds, movieIds, sessionIds);
     }
 
     /**
@@ -89,105 +85,94 @@ public class Cinema {
      * @param address Новое название
      * @return Оригинальный объект класса Cinema с новым адресом
      */
-    public Cinema setAddress(String address) {
-        this.address = address;
-        return this;
+    public Cinema withAddress(String address) {
+        return new Cinema(id, title, address, hallIds, movieIds, sessionIds);
     }
 
     /**
      * Получает список всех залов кинотеатра
      * @return Список всех залов кинотеатра
      */
-    public Set<Hall> getHalls() {
-        return halls;
-    }
-
-    public Hall getHallByNumber(int number) {
-        for (Hall hall : halls) {
-            if(hall.getHallNumber() == number)
-                return hall;
-        }
-
-        throw new RuntimeException("No Hall with number " + number + " found");
+    public StrictHashSet<Integer> getHallIds() {
+        return new StrictHashSet<>(hallIds);
     }
 
     /**
      * Обновляет список залов кинотеатра
-     * @param halls Новый список залов
+     * @param hallIds Новый список залов
      * @return Оригинальный объект класса Cinema с новым списком залов
      */
-    public Cinema setHalls(Set<Hall> halls) {
-        this.halls = halls;
-        return this;
+    public Cinema withHallIds(StrictHashSet<Integer> hallIds) {
+        return new Cinema(id, title, address, hallIds, movieIds, sessionIds);
     }
 
-    /**
-     * Добавляет зал в кинотеатр.
-     * @param hall Зал для добавления.
-     */
-    public Cinema addHall(Hall hall) throws Exception {
-        this.halls.add(hall);
-        return this;
+    public Cinema addHallId(Integer hallId) {
+        Set<Integer> newHallIds = new StrictHashSet<>(hallIds);
+        newHallIds.add(hallId);
+        return new Cinema(id, title, address, newHallIds, movieIds, sessionIds);
+    }
+
+    public Cinema removeHallId(Integer hallId) {
+        Set<Integer> newHallIds = new StrictHashSet<>(hallIds);
+        newHallIds.remove(hallId);
+        return new Cinema(id, title, address, newHallIds, movieIds, sessionIds);
     }
 
     /**
      * Получает список всех фильмов, доступных в кинотеатре
      * @return Список доступных фильмов
      */
-    public Set<Movie> getMovies() {
-        return movies;
-    }
-
-    public Movie getMovieByTitle(String title) {
-        return movies.stream()
-                .filter(movie -> movie.getTitle().equals(title))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Movie with such name not found"));
+    public StrictHashSet<Integer> getMovieIds() {
+        return new StrictHashSet<>(movieIds);
     }
 
     /**
      * Обновляет список фильмов, доступных в кинотеатре
      * @return Оригинальный объект класса Cinema с новым списком сеансов
      */
-    public Cinema setMovies(Set<Movie> movies) {
-        this.movies = movies;
-        return this;
+    public Cinema withMovieIds(StrictHashSet<Integer> movieIds) {
+        return new Cinema(id, title, address, hallIds, movieIds, sessionIds);
     }
 
-    /**
-     * Добавляет фильм в кинотеатр.
-     * @param movie Фильм для добавления.
-     */
-    public Cinema addMovie(Movie movie) throws Exception {
-        this.movies.add(movie);
-        return this;
+    public Cinema addMovieId(Integer movieId) {
+        Set<Integer> newMovieIds = new StrictHashSet<>(movieIds);
+        newMovieIds.add(movieId);
+        return new Cinema(id, title, address, hallIds, newMovieIds, sessionIds);
+    }
+
+    public Cinema removeMovieId(Integer movieId) {
+        Set<Integer> newMovieIds = new StrictHashSet<>(movieIds);
+        newMovieIds.remove(movieId);
+        return new Cinema(id, title, address, hallIds, newMovieIds, sessionIds);
     }
 
     /**
      * Возвращает список всех сеансов в кинотеатре
      * @return Список сеансов
      */
-    public Set<Session> getSessions() {
-        return sessions;
+    public StrictHashSet<Integer> getSessionIds() {
+        return new StrictHashSet<>(sessionIds);
     }
 
     /**
      * Обновляет список сеансов в кинотеатре
-     * @param sessions Новый список сеансов
+     * @param sessionIds Новый список сеансов
      * @return Оригинальный объект класса Cinema с новым списком сеансов
      */
-    public Cinema setSessions(Set<Session> sessions) {
-        this.sessions = sessions;
-        return this;
+    public Cinema withSessionIds(StrictHashSet<Integer> sessionIds) {
+        return new Cinema(id, title, address, hallIds, movieIds, sessionIds);
     }
 
-    /**
-     * Добавляет сеанс в кинотеатр.
-     * @param session Сеанс для добавления.
-     */
-    public Cinema addSession(Session session) throws Exception {
-        this.sessions.add(session);
-        return this;
+    public Cinema addSessionId(Integer sessionId) {
+        Set<Integer> newSessionIds = new StrictHashSet<>(sessionIds);
+        newSessionIds.add(sessionId);
+        return new Cinema(id, title, address, hallIds, movieIds, newSessionIds);
+    }
+
+    public Cinema removeSessionId(Integer sessionId) {
+        Set<Integer> newSessionIds = new StrictHashSet<>(sessionIds);
+        newSessionIds.remove(sessionId);
+        return new Cinema(id, title, address, hallIds, movieIds, newSessionIds);
     }
 
     @Override

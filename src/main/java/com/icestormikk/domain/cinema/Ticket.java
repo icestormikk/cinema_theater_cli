@@ -6,9 +6,9 @@ import java.util.Objects;
  * Класс, представляющий билет на сеанс.
  */
 public class Ticket {
-    private int id;
+    private Integer id;
     /** Сеанс, на который куплен билет. */
-    private Session session;
+    private Integer sessionId;
     /** Номер места в зале. */
     private int seat;
     /** Статус билета. */
@@ -16,18 +16,14 @@ public class Ticket {
 
     /**
      * Конструктор для создания билета.
-     * @param session Сеанс, на который куплен билет.
-     * @param seat    Номер места в зале.
+     * @param sessionId Сеанс, на который куплен билет.
+     * @param seat      Номер места в зале.
      */
-    public Ticket(Integer id, Session session, int seat) {
+    public Ticket(Integer id, Integer sessionId, int seat, TicketStatus status) {
         this.id = id;
-        this.session = session;
+        this.sessionId = sessionId;
         this.seat = seat;
-        this.status = TicketStatus.Booked;
-    }
-
-    public Ticket(Session session, int seat) {
-        this(null, session, seat);
+        this.status = status;
     }
 
     /**
@@ -43,27 +39,25 @@ public class Ticket {
      * @param id Новый идентификатор билета
      * @return Оригинальный объект класса Ticket c обновлённым идентификатором
      */
-    public Ticket setId(Integer id) {
-        this.id = id;
-        return this;
+    public Ticket withId(Integer id) {
+        return new Ticket(id, sessionId, seat, status);
     }
 
     /**
      * Получить сеанс, на который куплен билет
      * @return Сеанс, на который куплен билет
      */
-    public Session getSession() {
-        return session;
+    public Integer getSessionId() {
+        return sessionId;
     }
 
     /**
      * Обновить сеанс, на который куплен билет
-     * @param session Новый сеанс
+     * @param sessionId Новый сеанс
      * @return Оригинальный объект класса Ticket с новым полем session
      */
-    public Ticket setSession(Session session) {
-        this.session = session;
-        return this;
+    public Ticket withSessionId(Integer sessionId) {
+        return new Ticket(id, sessionId, seat, status);
     }
 
     /**
@@ -79,12 +73,11 @@ public class Ticket {
      * @param seat Новый номер места в зале
      * @return Оригинальный объект класса Ticket с новым полем seat
      */
-    public Ticket setSeat(int seat) {
+    public Ticket withSeat(int seat) {
         if(seat < 0)
             throw new IllegalArgumentException("Seat number must be a positive integer");
 
-        this.seat = seat;
-        return this;
+        return new Ticket(id, sessionId, seat, status);
     }
 
     /**
@@ -100,25 +93,29 @@ public class Ticket {
      * @param status Новый статус билета
      * @return Оригинальный объект класса Ticket с новым статусом
      */
-    public Ticket setStatus(TicketStatus status) {
-        this.status = status;
-        return this;
-    }
-
-    /**
-     * Купить билет
-     */
-    public void purchase() {
-        status = TicketStatus.Purchased;
+    public Ticket withStatus(TicketStatus status) {
+        return new Ticket(id, sessionId, seat, status);
     }
 
     @Override
     public String toString() {
         return "Ticket{" +
                 "id=" + id +
-                ", session=" + session.getMovie().getTitle() +
+                ", sessionId=" + sessionId +
                 ", seat=" + seat +
                 ", status=" + status +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Ticket ticket = (Ticket) o;
+        return getSeat() == ticket.getSeat() && Objects.equals(getSessionId(), ticket.getSessionId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getSessionId(), getSeat());
     }
 }
