@@ -37,6 +37,7 @@ import java.util.Objects;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class CinemaCLI {
     private AdminService adminService;
@@ -321,7 +322,7 @@ public class CinemaCLI {
             System.out.println("Successfully registered user: " + userService.getByUsername(username));
     }
 
-    private void loginUser() throws Exception {
+    private void loginUser() {
         System.out.print("Enter your username: ");
         String username = scanner.nextLine();
 
@@ -337,8 +338,7 @@ public class CinemaCLI {
         isAdmin();
 
         System.out.println("All users:");
-        for (User user : userService.getAll())
-            System.out.println(user);
+        userService.getAll().forEach(System.out::println);
     }
 
     private void updateUser() throws Exception {
@@ -387,7 +387,7 @@ public class CinemaCLI {
         System.out.println("Successfully registered admin: " + username + " (" + firstName + " " + lastName + ")");
     }
 
-    private void loginAdmin() throws Exception {
+    private void loginAdmin() {
         System.out.print("Enter your username: ");
         String username = scanner.nextLine();
 
@@ -403,8 +403,7 @@ public class CinemaCLI {
         isAdmin();
 
         System.out.println("All admins:");
-        for (Admin admin : adminService.getAll())
-            System.out.println(admin);
+        adminService.getAll().forEach(System.out::println);
     }
 
     private void updateAdmin() throws Exception {
@@ -448,8 +447,9 @@ public class CinemaCLI {
         isAdmin();
 
         System.out.println("All cinemas:");
-        for (Integer id: adminService.getById(adminId).getCinemaIds())
-            System.out.println(cinemaService.getById(id));
+        adminService.getById(adminId).getCinemaIds().stream()
+            .map((id) -> cinemaService.getById(id))
+            .forEach(System.out::println);
     }
 
     private void createCinema() throws Exception {
@@ -497,19 +497,15 @@ public class CinemaCLI {
 
         Cinema cinema = cinemaService.getByTitle(name);
 
-        for (Integer cinemaSessionId: cinema.getSessionIds()) {
-            for (User user: userService.getAll()) {
-                Set<Integer> userTicketIds = user.getTicketIds();
-                for (Integer ticketId: userTicketIds) {
-                    Ticket ticket = ticketService.getById(ticketId);
-                    if(ticket.getSessionId().equals(cinemaSessionId)) {
-                        ticketService = (TicketService) ticketService.deleteById(ticketId);
-                        userTicketIds.remove(ticketId);
-                    }
+        cinema.getSessionIds().forEach((sessionId) -> {
+            userService.getAll().forEach((user) -> {
+                try {
+                    deleteUserTicketsBySessionId(sessionId, user);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
-                userService = (UserService) userService.updateById(user.getId(), user.withTicketIds(userTicketIds));
-            }
-        }
+            });
+        });
 
         cinemaService = (CinemaService) cinemaService.deleteById(cinema.getId());
         if(cinema.getId() == cinemaId)
@@ -541,8 +537,9 @@ public class CinemaCLI {
         isCinemaSelected();
 
         System.out.println("All halls:");
-        for(Integer hallId: cinemaService.getById(cinemaId).getHallIds())
-            System.out.println(hallService.getById(hallId));
+        cinemaService.getById(cinemaId).getHallIds().stream()
+            .map(hallId -> hallService.getById(hallId))
+            .forEach(System.out::println);
     }
 
     private void updateHall() throws Exception {
@@ -572,20 +569,15 @@ public class CinemaCLI {
 
         Hall hall = hallService.getByCinemaIdAndNumber(cinemaId, hallNumber);
 
-        for (Integer hallSessionId: hall.getSessionIds()) {
-            sessionService = (SessionService) sessionService.deleteById(hallSessionId);
-            for (User user: userService.getAll()) {
-                Set<Integer> userTicketIds = user.getTicketIds();
-                for (Integer ticketId: userTicketIds) {
-                    Ticket ticket = ticketService.getById(ticketId);
-                    if(ticket.getSessionId().equals(hallSessionId)) {
-                        ticketService = (TicketService) ticketService.deleteById(ticketId);
-                        userTicketIds.remove(ticketId);
-                    }
+        hall.getSessionIds().forEach((sessionId) -> {
+            userService.getAll().forEach((user) -> {
+                try {
+                    deleteUserTicketsBySessionId(sessionId, user);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
-                userService = (UserService) userService.updateById(user.getId(), user.withTicketIds(userTicketIds));
-            }
-        }
+            });
+        });
 
         cinemaService = (CinemaService) cinemaService.updateById(cinemaId, cinemaService.getById(cinemaId).removeHallId(hall.getId()));
         System.out.println("Hall deleted: " + hall);
@@ -597,8 +589,9 @@ public class CinemaCLI {
         isCinemaSelected();
 
         System.out.println("All movies:");
-        for (Integer movieId: cinemaService.getById(cinemaId).getMovieIds())
-            System.out.println(movieService.getById(movieId));
+        cinemaService.getById(cinemaId).getMovieIds().stream()
+            .map(movieId -> movieService.getById(movieId))
+            .forEach(System.out::println);
     }
 
     private void addMovie() throws Exception {
@@ -662,25 +655,33 @@ public class CinemaCLI {
 
         Movie movie = movieService.getByTitle(title);
 
-        for (Session session : sessionService.getAll()) {
-            if(session.getMovieId().equals(movie.getId())) {
-                for(User user: userService.getAll()) {
-                    Set<Integer> userTicketIds = user.getTicketIds();
+        sessionService.getAll().forEach((session) -> {
+            try {
+                if (session.getMovieId().equals(movie.getId())) {
+                    userService.getAll().forEach((user) -> {
+                        try {
+                            Set<Integer> userTicketIds = user.getTicketIds();
 
-                    for(Integer ticketId: userTicketIds) {
-                        Ticket ticket = ticketService.getById(ticketId);
-                        if (ticket.getSessionId().equals(session.getId())) {
-                            ticketService = (TicketService) ticketService.deleteById(ticketId);
-                            userTicketIds.remove(ticketId);
+                            for (Integer ticketId : userTicketIds) {
+                                Ticket ticket = ticketService.getById(ticketId);
+                                if (ticket.getSessionId().equals(session.getId())) {
+                                    ticketService = (TicketService) ticketService.deleteById(ticketId);
+                                    userTicketIds.remove(ticketId);
+                                }
+                            }
+
+                            userService = (UserService) userService.updateById(user.getId(), user.withTicketIds(userTicketIds));
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
                         }
-                    }
+                    });
 
-                    userService = (UserService) userService.updateById(user.getId(), user.withTicketIds(userTicketIds));
+                    sessionService = (SessionService) sessionService.deleteById(session.getId());
                 }
-
-                sessionService = (SessionService) sessionService.deleteById(session.getId());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-        }
+        });
 
         movieService = (MovieService) movieService.deleteById(movie.getId());
         cinemaService = (CinemaService) cinemaService.updateById(cinemaId, cinemaService.getById(cinemaId).removeMovieId(movie.getId()));
@@ -695,8 +696,9 @@ public class CinemaCLI {
         Cinema cinema = cinemaService.getById(cinemaId);
 
         System.out.println("All sessions for cinema " + cinema.getTitle() + ": ");
-        for (Integer sessionId: cinema.getSessionIds())
-            System.out.println(sessionService.getById(sessionId));
+        cinema.getSessionIds().stream()
+            .map(sessionId -> sessionService.getById(sessionId))
+            .forEach(System.out::println);
     }
 
     private void addSession() throws Exception {
@@ -757,18 +759,13 @@ public class CinemaCLI {
 
         Session session = sessionService.getById(id);
 
-        for (User user : userService.getAll()) {
-            Set<Integer> ticketIds = user.getTicketIds();
-
-            for (Integer ticketId: ticketIds) {
-                if (ticketService.getById(ticketId).getSessionId().equals(session.getId())) {
-                    ticketService = (TicketService) ticketService.deleteById(ticketId);
-                    ticketIds.remove(ticketId);
-                }
+        userService.getAll().forEach((user) -> {
+            try {
+                deleteUserTicketsBySessionId(session.getId(), user);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-
-            userService = (UserService) userService.updateById(user.getId(), user.withTicketIds(ticketIds));
-        }
+        });
 
         sessionService = (SessionService) sessionService.deleteById(id);
         cinemaService = (CinemaService) cinemaService.updateById(cinemaId, cinemaService.getById(cinemaId).removeSessionId(session.getId()));
@@ -781,17 +778,14 @@ public class CinemaCLI {
         System.out.print("Enter movie title: ");
         String title = scanner.nextLine();
 
-        Set<Session> sessions = sessionService.getByMovieId(movieService.getByTitle(title).getId());
-
-        for (Session session : sessions) {
+        sessionService.getByMovieId(movieService.getByTitle(title).getId()).forEach((session) -> {
             System.out.println("Available seats for session: " + session);
-            for (int seat = 1; seat <= hallService.getById(session.getHallId()).getSeats(); seat++) {
-                if (!session.getBookedSeats().contains(seat)) {
-                    System.out.print(seat + " ");
-                }
-            }
+            IntStream.rangeClosed(1, hallService.getById(session.getHallId()).getSeats())
+                .filter((seat) -> !session.getBookedSeats().contains(seat))
+                .mapToObj((seat) -> seat + " ")
+                .forEach(System.out::print);
             System.out.println();
-        }
+        });
     }
 
     // TICKET
@@ -800,8 +794,9 @@ public class CinemaCLI {
         isUser();
 
         System.out.println("Your tickets:");
-        for (Integer ticketId : userService.getById(userId).getTicketIds())
-            System.out.println(ticketService.getById(ticketId));
+        userService.getById(userId).getTicketIds().stream()
+            .map((ticketId) -> ticketService.getById(ticketId))
+            .forEach(System.out::println);
     }
 
     private void bookTicket() throws Exception {
@@ -811,9 +806,7 @@ public class CinemaCLI {
         System.out.print("Enter session movie title: ");
         String title = scanner.nextLine();
 
-        Set<Session> sessions = sessionService.getByMovieId(movieService.getByTitle(title).getId());
-        for (Session session : sessions)
-            System.out.println(session);
+        sessionService.getByMovieId(movieService.getByTitle(title).getId()).forEach(System.out::println);
 
         System.out.print("Enter session id: ");
         int sessionId = Integer.parseInt(scanner.nextLine());
@@ -839,9 +832,10 @@ public class CinemaCLI {
         isUser();
 
         System.out.println("Your tickets:");
-        Set<Ticket> userTickets = userService.getById(userId).getTicketIds().stream().map((id) -> ticketService.getById(id)).collect(Collectors.toSet());
-        for (Ticket ticket : userTickets)
-            System.out.println(ticket);
+        Set<Ticket> userTickets = userService.getById(userId).getTicketIds().stream()
+                .map((id) -> ticketService.getById(id))
+                .collect(Collectors.toSet());
+        userTickets.forEach(System.out::println);
 
         System.out.print("Enter the ticket id to cancel: ");
         Integer ticketId = Integer.parseInt(scanner.nextLine());
@@ -869,8 +863,7 @@ public class CinemaCLI {
                 .map((id) -> ticketService.getById(id))
                 .filter((ticket) -> ticket.getStatus().equals(TicketStatus.Booked))
                 .collect(Collectors.toSet());
-        for (Ticket ticket : bookedUserTickets)
-            System.out.println(ticket);
+        bookedUserTickets.forEach(System.out::println);
 
         System.out.print("Enter the ticket id to purchase: ");
         int ticketId = Integer.parseInt(scanner.nextLine());
@@ -891,13 +884,25 @@ public class CinemaCLI {
         isAdmin();
         isCinemaSelected();
 
-        int totalBookedTickets = 0;
-        for (Integer sessionId: cinemaService.getById(cinemaId).getSessionIds()) {
-            int bookedSeats = sessionService.getById(sessionId).getBookedSeats().size();
-            totalBookedTickets += bookedSeats;
-        }
+        int totalBookedTickets = cinemaService.getById(cinemaId).getSessionIds().stream()
+                .mapToInt((sessionId) -> sessionService.getById(sessionId).getBookedSeats().size())
+                .sum();
 
         System.out.println("Total booked tickets: " + totalBookedTickets);
+    }
+
+    private void deleteUserTicketsBySessionId(Integer sessionId, User user) throws Exception {
+        Set<Integer> userTicketIds = user.getTicketIds();
+
+        for (Integer ticketId : userTicketIds) {
+            Ticket ticket = ticketService.getById(ticketId);
+            if(ticket.getSessionId().equals(sessionId)) {
+                ticketService = (TicketService) ticketService.deleteById(ticketId);
+                userTicketIds.remove(ticketId);
+            }
+        }
+
+        userService = (UserService) userService.updateById(user.getId(), user.withTicketIds(userTicketIds));
     }
 
     private void isUser() {
