@@ -63,8 +63,7 @@ public class UserRepositoryImpl implements UserRepository {
                 .withUsername(user.getUsername()).withTicketIds(user.getTicketIds());
 
         StrictHashSet<User> updatedUsers = new StrictHashSet<>();
-        for (User u : users)
-            updatedUsers.add(Objects.equals(u.getId(), user.getId()) ? newUser : u);
+        users.stream().map(u -> Objects.equals(u.getId(), user.getId()) ? newUser : u).forEach(updatedUsers::add);
 
         return new UserRepositoryImpl(updatedUsers, nextId);
     }
@@ -77,9 +76,7 @@ public class UserRepositoryImpl implements UserRepository {
             throw new Exception("User with such id not found");
 
         StrictHashSet<User> updatedUsers = new StrictHashSet<>();
-        for (User u : users)
-            if(!Objects.equals(u.getId(), userOpt.get().getId()))
-                updatedUsers.add(u);
+        users.stream().filter(u -> !Objects.equals(u.getId(), userOpt.get().getId())).forEach(updatedUsers::add);
 
         return new UserRepositoryImpl(updatedUsers, nextId);
     }

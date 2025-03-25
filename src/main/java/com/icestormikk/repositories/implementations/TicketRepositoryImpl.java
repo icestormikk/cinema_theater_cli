@@ -56,8 +56,7 @@ public class TicketRepositoryImpl implements TicketRepository {
         Ticket newTicket = oldTicket.get().withSeat(ticket.getSeat()).withSessionId(ticket.getSessionId()).withStatus(ticket.getStatus());
 
         StrictHashSet<Ticket> updatedTickets = new StrictHashSet<>();
-        for (Ticket t : tickets)
-            updatedTickets.add(Objects.equals(t.getId(), ticket.getId()) ? newTicket : t);
+        tickets.stream().map(t -> Objects.equals(t.getId(), ticket.getId()) ? newTicket : t).forEach(updatedTickets::add);
 
         return new TicketRepositoryImpl(updatedTickets, nextId);
     }
@@ -70,9 +69,7 @@ public class TicketRepositoryImpl implements TicketRepository {
             throw new Exception("Ticket object with such id not found");
 
         StrictHashSet<Ticket> updatedTickets = new StrictHashSet<>();
-        for (Ticket t : tickets)
-            if(!Objects.equals(t.getId(), ticketOpt.get().getId()))
-                updatedTickets.add(t);
+        tickets.stream().filter(t -> !Objects.equals(t.getId(), ticketOpt.get().getId())).forEach(updatedTickets::add);
 
         return new TicketRepositoryImpl(updatedTickets, nextId);
     }

@@ -57,8 +57,7 @@ public class HallRepositoryImpl implements HallRepository {
                 .withSessionIds(hall.getSessionIds());
 
         StrictHashSet<Hall> updatedHalls = new StrictHashSet<>();
-        for (Hall c : halls)
-            updatedHalls.add(Objects.equals(c.getId(), hall.getId()) ? newHall : c);
+        halls.stream().map(c -> Objects.equals(c.getId(), hall.getId()) ? newHall : c).forEach(updatedHalls::add);
 
         return new HallRepositoryImpl(updatedHalls, nextId);
     }
@@ -71,9 +70,7 @@ public class HallRepositoryImpl implements HallRepository {
             throw new Exception("Hall object with such id not found");
 
         StrictHashSet<Hall> updatedCinemas = new StrictHashSet<>();
-        for (Hall u : halls)
-            if(!Objects.equals(u.getId(), hallOpt.get().getId()))
-                updatedCinemas.add(u);
+        halls.stream().filter(u -> !Objects.equals(u.getId(), hallOpt.get().getId())).forEach(updatedCinemas::add);
 
         return new HallRepositoryImpl(updatedCinemas, nextId);
     }

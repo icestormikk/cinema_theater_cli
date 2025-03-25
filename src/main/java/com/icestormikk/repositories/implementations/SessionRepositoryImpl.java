@@ -57,8 +57,7 @@ public class SessionRepositoryImpl implements SessionRepository {
                 .withBookedSeats(session.getBookedSeats()).withMovieId(session.getMovieId()).withHallId(session.getHallId());
 
         StrictHashSet<Session> updatedSessions = new StrictHashSet<>();
-        for (Session s : sessions)
-            updatedSessions.add(Objects.equals(s.getId(), session.getId()) ? newSession : s);
+        sessions.stream().map(s -> Objects.equals(s.getId(), session.getId()) ? newSession : s).forEach(updatedSessions::add);
 
         return new SessionRepositoryImpl(updatedSessions, nextId);
     }
@@ -71,9 +70,7 @@ public class SessionRepositoryImpl implements SessionRepository {
             throw new Exception("Movie object with such id not found");
 
         StrictHashSet<Session> updatedSessions = new StrictHashSet<>();
-        for (Session s : sessions)
-            if(!Objects.equals(s.getId(), sessionOpt.get().getId()))
-                updatedSessions.add(s);
+        sessions.stream().filter(s -> !Objects.equals(s.getId(), sessionOpt.get().getId())).forEach(updatedSessions::add);
 
         return new SessionRepositoryImpl(updatedSessions, nextId);
 

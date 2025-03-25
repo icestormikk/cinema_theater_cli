@@ -40,7 +40,7 @@ public class AdminRepositoryImpl implements AdminRepository {
 
     @Override
     public AdminRepository save(Admin admin) throws Exception {
-        Admin newAdmin = (Admin) admin.withId(nextId.getAndIncrement());
+        Admin newAdmin = admin.withId(nextId.getAndIncrement());
 
         if (admins.contains(newAdmin)) {
             throw new Exception("Admin with such data already exists");
@@ -63,8 +63,7 @@ public class AdminRepositoryImpl implements AdminRepository {
             .withUsername(admin.getUsername()).withTicketIds(admin.getTicketIds()).withCinemaIds(admin.getCinemaIds());
 
         StrictHashSet<Admin> updatedAdmins = new StrictHashSet<>();
-        for (Admin a : admins)
-            updatedAdmins.add(Objects.equals(a.getId(), admin.getId()) ? newAdmin : a);
+        admins.stream().map(a -> Objects.equals(a.getId(), admin.getId()) ? newAdmin : a).forEach(updatedAdmins::add);
 
         return new AdminRepositoryImpl(updatedAdmins, nextId);
     }
@@ -77,9 +76,7 @@ public class AdminRepositoryImpl implements AdminRepository {
             throw new Exception("Admin with such id was not found");
 
         StrictHashSet<Admin> updatedAdmins = new StrictHashSet<>();
-        for (Admin a : admins)
-            if (!Objects.equals(a.getId(), id))
-               updatedAdmins.add(a);
+        admins.stream().filter(a -> !Objects.equals(a.getId(), id)).forEach(updatedAdmins::add);
 
         return new AdminRepositoryImpl(updatedAdmins, nextId);
     }

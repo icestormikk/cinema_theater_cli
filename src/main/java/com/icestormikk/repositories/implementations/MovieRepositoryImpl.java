@@ -56,8 +56,7 @@ public class MovieRepositoryImpl implements MovieRepository {
         Movie newMovie = oldMovie.get().withTitle(movie.getTitle()).withDurationInMin(movie.getDurationInMin()).withGenre(movie.getGenre()).withRating(movie.getRating());
 
         StrictHashSet<Movie> updatedMovies = new StrictHashSet<>();
-        for (Movie m : movies)
-            updatedMovies.add(Objects.equals(m.getId(), movie.getId()) ? newMovie : m);
+        movies.stream().map(m -> Objects.equals(m.getId(), movie.getId()) ? newMovie : m).forEach(updatedMovies::add);
 
         return new MovieRepositoryImpl(updatedMovies, nextId);
     }
@@ -70,9 +69,7 @@ public class MovieRepositoryImpl implements MovieRepository {
             throw new Exception("Movie object with such id not found");
 
         StrictHashSet<Movie> updatedMovies = new StrictHashSet<>();
-        for (Movie m : movies)
-            if(!Objects.equals(m.getId(), movieOpt.get().getId()))
-                updatedMovies.add(m);
+        movies.stream().filter(m -> !Objects.equals(m.getId(), movieOpt.get().getId())).forEach(updatedMovies::add);
 
         return new MovieRepositoryImpl(updatedMovies, nextId);
     }

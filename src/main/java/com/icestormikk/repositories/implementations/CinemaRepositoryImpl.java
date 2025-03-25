@@ -62,8 +62,7 @@ public class CinemaRepositoryImpl implements CinemaRepository {
                 .withHallIds(cinema.getHallIds()).withMovieIds(cinema.getMovieIds()).withSessionIds(cinema.getSessionIds());
 
         StrictHashSet<Cinema> updatedCinemas = new StrictHashSet<>();
-        for (Cinema c : cinemas)
-            updatedCinemas.add(Objects.equals(c.getId(), cinema.getId()) ? newCinema : c);
+        cinemas.stream().map(c -> Objects.equals(c.getId(), cinema.getId()) ? newCinema : c).forEach(updatedCinemas::add);
 
         return new CinemaRepositoryImpl(updatedCinemas, nextId);
     }
@@ -76,9 +75,7 @@ public class CinemaRepositoryImpl implements CinemaRepository {
             throw new Exception("Cinema with such id not found");
 
         StrictHashSet<Cinema> updatedCinemas = new StrictHashSet<>();
-        for (Cinema u : cinemas)
-            if(!Objects.equals(u.getId(), cinemaOpt.get().getId()))
-                updatedCinemas.add(u);
+        cinemas.stream().filter(u -> !Objects.equals(u.getId(), cinemaOpt.get().getId())).forEach(updatedCinemas::add);
 
         return new CinemaRepositoryImpl(updatedCinemas, nextId);
     }
