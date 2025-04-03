@@ -6,13 +6,13 @@ import java.util.Objects;
  * Класс, представляющий билет на сеанс.
  */
 public class Ticket {
-    private Integer id;
+    private final Integer id;
     /** Сеанс, на который куплен билет. */
-    private Integer sessionId;
+    private final Integer sessionId;
     /** Номер места в зале. */
-    private int seat;
+    private final int seat;
     /** Статус билета. */
-    private TicketStatus status;
+    private final TicketStatus status;
 
     /**
      * Конструктор для создания билета.

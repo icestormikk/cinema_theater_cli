@@ -2,9 +2,7 @@ package com.icestormikk.domain.cinema;
 
 import com.icestormikk.utils.StrictHashSet;
 
-import java.util.Collections;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * Класс, описывающий зал кинотеатра
@@ -17,19 +15,19 @@ public class Hall {
     /** Количество мест в зале. */
     private final int seats;
     /** Список сеансов, проходящих в зале. */
-    private final Set<Integer> sessionIds;
+    private final StrictHashSet<Integer> sessionIds;
 
     /**
      * Конструктор для создания зала.
      * @param hallNumber Номер зала.
      * @param seats Количество мест в зале.
      */
-    public Hall(Integer id, Integer cinemaId, int hallNumber, int seats, Set<Integer> sessionIds) {
+    public Hall(Integer id, Integer cinemaId, int hallNumber, int seats, StrictHashSet<Integer> sessionIds) {
         this.id = id;
         this.cinemaId = cinemaId;
         this.hallNumber = hallNumber;
         this.seats = seats;
-        this.sessionIds = Collections.unmodifiableSet(sessionIds);
+        this.sessionIds = new StrictHashSet<>(sessionIds);
     }
 
     /**

@@ -2,25 +2,23 @@ package com.icestormikk.domain.cinema;
 
 import com.icestormikk.utils.StrictHashSet;
 
-import java.util.Collections;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * Класс, описывающий кинотеатры, в котором можно посещать киносеансы
  */
 public class Cinema {
-    private Integer id;
+    private final Integer id;
     /** Название кинотеатра. */
     private final String title;
     /** Адрес кинотеатра. */
     private final String address;
     /** Список залов в кинотеатре. */
-    private final Set<Integer> hallIds;
+    private final StrictHashSet<Integer> hallIds;
     /** Список фильмов, доступных в кинотеатре. */
-    private final Set<Integer> movieIds;
+    private final StrictHashSet<Integer> movieIds;
     /** Список сеансов в кинотеатре. */
-    private final Set<Integer> sessionIds;
+    private final StrictHashSet<Integer> sessionIds;
 
     /**
      * Конструктор для создания кинотеатра.
@@ -28,13 +26,13 @@ public class Cinema {
      * @param title   Название кинотеатра.
      * @param address Адрес кинотеатра.
      */
-    public Cinema(Integer id, String title, String address, Set<Integer> hallIds, Set<Integer> movieIds, Set<Integer> sessionIds) {
+    public Cinema(Integer id, String title, String address, StrictHashSet<Integer> hallIds, StrictHashSet<Integer> movieIds, StrictHashSet<Integer> sessionIds) {
         this.id = id;
         this.title = title;
         this.address = address;
-        this.hallIds = Collections.unmodifiableSet(hallIds);
-        this.movieIds = Collections.unmodifiableSet(movieIds);
-        this.sessionIds = Collections.unmodifiableSet(sessionIds);
+        this.hallIds = new StrictHashSet<>(hallIds);
+        this.movieIds = new StrictHashSet<>(movieIds);
+        this.sessionIds = new StrictHashSet<>(sessionIds);
     }
 
     /**
@@ -51,8 +49,7 @@ public class Cinema {
      * @return Оригинальный объект класса Cinema c обновлённым идентификатором
      */
     public Cinema withId(int id) {
-        this.id = id;
-        return this;
+        return new Cinema(id, title, address, hallIds, movieIds, sessionIds);
     }
 
     /**
@@ -107,15 +104,11 @@ public class Cinema {
     }
 
     public Cinema addHallId(Integer hallId) {
-        Set<Integer> newHallIds = new StrictHashSet<>(hallIds);
-        newHallIds.add(hallId);
-        return new Cinema(id, title, address, newHallIds, movieIds, sessionIds);
+        return new Cinema(id, title, address, hallIds.with(hallId), movieIds, sessionIds);
     }
 
     public Cinema removeHallId(Integer hallId) {
-        Set<Integer> newHallIds = new StrictHashSet<>(hallIds);
-        newHallIds.remove(hallId);
-        return new Cinema(id, title, address, newHallIds, movieIds, sessionIds);
+        return new Cinema(id, title, address, hallIds.without(hallId), movieIds, sessionIds);
     }
 
     /**
@@ -135,15 +128,11 @@ public class Cinema {
     }
 
     public Cinema addMovieId(Integer movieId) {
-        Set<Integer> newMovieIds = new StrictHashSet<>(movieIds);
-        newMovieIds.add(movieId);
-        return new Cinema(id, title, address, hallIds, newMovieIds, sessionIds);
+        return new Cinema(id, title, address, hallIds, movieIds.with(movieId), sessionIds);
     }
 
     public Cinema removeMovieId(Integer movieId) {
-        Set<Integer> newMovieIds = new StrictHashSet<>(movieIds);
-        newMovieIds.remove(movieId);
-        return new Cinema(id, title, address, hallIds, newMovieIds, sessionIds);
+        return new Cinema(id, title, address, hallIds, movieIds.without(movieId), sessionIds);
     }
 
     /**
@@ -164,15 +153,11 @@ public class Cinema {
     }
 
     public Cinema addSessionId(Integer sessionId) {
-        Set<Integer> newSessionIds = new StrictHashSet<>(sessionIds);
-        newSessionIds.add(sessionId);
-        return new Cinema(id, title, address, hallIds, movieIds, newSessionIds);
+        return new Cinema(id, title, address, hallIds, movieIds, sessionIds.with(sessionId));
     }
 
     public Cinema removeSessionId(Integer sessionId) {
-        Set<Integer> newSessionIds = new StrictHashSet<>(sessionIds);
-        newSessionIds.remove(sessionId);
-        return new Cinema(id, title, address, hallIds, movieIds, newSessionIds);
+        return new Cinema(id, title, address, hallIds, movieIds, sessionIds.without(sessionId));
     }
 
     @Override

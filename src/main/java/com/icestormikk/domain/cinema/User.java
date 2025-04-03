@@ -3,21 +3,20 @@ package com.icestormikk.domain.cinema;
 import com.icestormikk.utils.StrictHashSet;
 
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * Класс, представляющий пользователя системы.
  */
 public class User {
-    private Integer id;
+    private final Integer id;
     /** Имя пользователя. */
-    private String firstName;
+    private final String firstName;
     /** Фамилия пользователя. */
-    private String lastName;
+    private final String lastName;
     /** Никнейм пользователя. */
-    private String username;
+    private final String username;
     /** Список билетов, забронированных пользователем. */
-    public Set<Integer> ticketIds;
+    private final StrictHashSet<Integer> ticketIds;
 
     /**
      * Конструктор для создания пользователя.
@@ -25,15 +24,15 @@ public class User {
      * @param lastName Фамилия пользователя.
      * @param username Никнейм пользователя.
      */
-    public User(Integer id, String firstName, String lastName, String username, Set<Integer> ticketIds) {
+    public User(Integer id, String firstName, String lastName, String username, StrictHashSet<Integer> ticketIds) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
-        this.ticketIds = ticketIds;
+        this.ticketIds = new StrictHashSet<>(ticketIds);
     }
 
-    public User(String firstName, String lastName, String username, Set<Integer> ticketIds) {
+    public User(String firstName, String lastName, String username, StrictHashSet<Integer> ticketIds) {
         this(null, firstName, lastName, username, ticketIds);
     }
 
@@ -55,8 +54,7 @@ public class User {
      * @return Оригинальный объект класса User c обновлённым идентификатором
      */
     public User withId(Integer id) {
-        this.id = id;
-        return this;
+        return new User(id, firstName, lastName, username, ticketIds);
     }
 
     /**
@@ -114,7 +112,7 @@ public class User {
      * Возвращает список билетов пользователя.
      * @return Список билетов пользователя.
      */
-    public Set<Integer> getTicketIds() {
+    public StrictHashSet<Integer> getTicketIds() {
         return new StrictHashSet<>(ticketIds);
     }
 
@@ -123,20 +121,16 @@ public class User {
      * @param ticketIds Список билетов пользователя
      * @return Оригинальный объект класса User с новым списком билетов
      */
-    public User withTicketIds(Set<Integer> ticketIds) {
+    public User withTicketIds(StrictHashSet<Integer> ticketIds) {
         return new User(id, firstName, lastName, username, ticketIds);
     }
 
     public User addTicketId(Integer ticketId) {
-        Set<Integer> newTicketIds = new StrictHashSet<>(ticketIds);
-        newTicketIds.add(ticketId);
-        return new User(id, firstName, lastName, username, newTicketIds);
+        return new User(id, firstName, lastName, username, ticketIds.with(ticketId));
     }
 
     public User removeTicketId(Integer ticketId) {
-        Set<Integer> newTicketIds = new StrictHashSet<>(ticketIds);
-        newTicketIds.remove(ticketId);
-        return new User(id, firstName, lastName, username, newTicketIds);
+        return new User(id, firstName, lastName, username, ticketIds.without(ticketId));
     }
 
     @Override

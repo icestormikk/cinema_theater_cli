@@ -10,10 +10,9 @@ public class StrictHashSet<T> extends HashSet<T> {
         super(c);
     }
 
-    public StrictHashSet<T> without(Object element) {
-        if (!contains(element)) {
-            throw new RuntimeException("Element not found in the set.");
-        }
+    public StrictHashSet<T> without(T element) {
+        if (!contains(element))
+            return new StrictHashSet<>(this);
 
         StrictHashSet<T> newSet = new StrictHashSet<>(this);
         newSet.remove(element);
@@ -22,9 +21,8 @@ public class StrictHashSet<T> extends HashSet<T> {
     }
 
     public StrictHashSet<T> with(T element) {
-        if (contains(element)) {
-            throw new RuntimeException("Element already exists in the set.");
-        }
+        if (contains(element))
+            return new StrictHashSet<>(this);
 
         StrictHashSet<T> newSet = new StrictHashSet<>(this);
         newSet.add(element);

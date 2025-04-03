@@ -2,9 +2,6 @@ package com.icestormikk.domain.cinema;
 
 import com.icestormikk.utils.StrictHashSet;
 
-import java.util.Collections;
-import java.util.Set;
-
 /**
  * Администратор кинотеатра
  */
@@ -12,7 +9,7 @@ public class Admin extends User {
     /**
      * Кинотеатры, которыми он может управлять
      */
-    private final Set<Integer> cinemaIds;
+    private final StrictHashSet<Integer> cinemaIds;
 
     /**
      * Конструктор класса Admin. Создаёт нового Администратора кинотеатра
@@ -20,12 +17,12 @@ public class Admin extends User {
      * @param lastName Фамилия администратора
      * @param username Имя пользователя
      */
-    public Admin(Integer id, String firstName, String lastName, String username, Set<Integer> ticketIds, Set<Integer> cinemaIds) {
+    public Admin(Integer id, String firstName, String lastName, String username, StrictHashSet<Integer> ticketIds, StrictHashSet<Integer> cinemaIds) {
         super(id, firstName, lastName, username, ticketIds);
-        this.cinemaIds = Collections.unmodifiableSet(cinemaIds);
+        this.cinemaIds = new StrictHashSet<>(cinemaIds);
     }
 
-    public Admin(String firstName, String lastName, String username, Set<Integer> ticketIds, Set<Integer> cinemaIds) {
+    public Admin(String firstName, String lastName, String username, StrictHashSet<Integer> ticketIds, StrictHashSet<Integer> cinemaIds) {
         this(null, firstName, lastName, username, ticketIds, cinemaIds);
     }
 
@@ -50,22 +47,18 @@ public class Admin extends User {
     }
 
     @Override
-    public Admin withTicketIds(Set<Integer> ticketIds) {
+    public Admin withTicketIds(StrictHashSet<Integer> ticketIds) {
         return new Admin(getId(), getFirstName(), getLastName(), getUsername(), ticketIds, getCinemaIds());
     }
 
     @Override
     public Admin addTicketId(Integer ticketId) {
-        StrictHashSet<Integer> newTicketIds = new StrictHashSet<>(getTicketIds());
-        newTicketIds.add(ticketId);
-        return new Admin(getId(), getFirstName(), getLastName(), getUsername(), newTicketIds, getCinemaIds());
+        return new Admin(getId(), getFirstName(), getLastName(), getUsername(), getTicketIds().with(ticketId), getCinemaIds());
     }
 
     @Override
     public Admin removeTicketId(Integer ticketId) {
-        StrictHashSet<Integer> newTicketIds = new StrictHashSet<>(getTicketIds());
-        newTicketIds.remove(ticketId);
-        return new Admin(getId(), getFirstName(), getLastName(), getUsername(), newTicketIds, getCinemaIds());
+        return new Admin(getId(), getFirstName(), getLastName(), getUsername(), getTicketIds().without(ticketId), getCinemaIds());
     }
 
     public StrictHashSet<Integer> getCinemaIds() {
@@ -77,14 +70,10 @@ public class Admin extends User {
     }
 
     public Admin addCinemaId(Integer id) {
-        StrictHashSet<Integer> newCinemaIds = new StrictHashSet<>(cinemaIds);
-        newCinemaIds.add(id);
-        return new Admin(getId(), getFirstName(), getLastName(), getUsername(), getTicketIds(), newCinemaIds);
+        return new Admin(getId(), getFirstName(), getLastName(), getUsername(), getTicketIds(), cinemaIds.with(id));
     }
 
     public Admin removeCinemaId(Integer id) {
-        StrictHashSet<Integer> newCinemaIds = new StrictHashSet<>(cinemaIds);
-        newCinemaIds.remove(id);
-        return new Admin(getId(), getFirstName(), getLastName(), getUsername(), getTicketIds(), newCinemaIds);
+        return new Admin(getId(), getFirstName(), getLastName(), getUsername(), getTicketIds(), cinemaIds.without(id));
     }
 }
