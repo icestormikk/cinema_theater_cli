@@ -1,24 +1,24 @@
 package com.icestormikk.repositories.implementations;
 
 import com.icestormikk.domain.cinema.Ticket;
-import com.icestormikk.utils.StrictHashSet;
+import com.icestormikk.utils.SafeHashSet;
 
 import java.util.Objects;
 import java.util.Optional;
 
 public class TicketRepository {
-    private final StrictHashSet<Ticket> tickets;
+    private final SafeHashSet<Ticket> tickets;
 
     public TicketRepository() {
-        this.tickets = new StrictHashSet<>();
+        this.tickets = new SafeHashSet<>();
     }
 
-    private TicketRepository(StrictHashSet<Ticket> tickets) {
+    private TicketRepository(SafeHashSet<Ticket> tickets) {
         this.tickets = tickets;
     }
 
-    public static StrictHashSet<Ticket> findAll(TicketRepository repository) {
-        return new StrictHashSet<>(repository.tickets);
+    public static SafeHashSet<Ticket> findAll(TicketRepository repository) {
+        return new SafeHashSet<>(repository.tickets);
     }
 
     public static Optional<Ticket> findById(TicketRepository repository, int id) {
@@ -26,17 +26,17 @@ public class TicketRepository {
     }
 
     public static TicketRepository save(TicketRepository repository, Ticket ticket) throws Exception {
-        StrictHashSet<Ticket> oldTickets = new StrictHashSet<>(repository.tickets);
+        SafeHashSet<Ticket> oldTickets = new SafeHashSet<>(repository.tickets);
         Ticket newTicket = ticket.withId(oldTickets.size() + 1);
 
         if(oldTickets.contains(newTicket))
             return new TicketRepository(oldTickets);
 
-        return new TicketRepository(oldTickets.with(newTicket));
+        return new TicketRepository(SafeHashSet.with(oldTickets, newTicket));
     }
 
     public static TicketRepository updateById(TicketRepository repository, Integer id, Ticket ticket) throws Exception {
-        StrictHashSet<Ticket> oldTickets = new StrictHashSet<>(repository.tickets);
+        SafeHashSet<Ticket> oldTickets = new SafeHashSet<>(repository.tickets);
         Optional<Ticket> oldTicket = findById(repository, id);
 
         if (oldTicket.isEmpty())
@@ -44,16 +44,16 @@ public class TicketRepository {
 
         Ticket newTicket = oldTicket.get().withSeat(ticket.getSeat()).withSessionId(ticket.getSessionId()).withStatus(ticket.getStatus());
 
-        StrictHashSet<Ticket> updatedTickets = new StrictHashSet<>();
+        SafeHashSet<Ticket> updatedTickets = new SafeHashSet<>();
         oldTickets.stream().map(t -> Objects.equals(t.getId(), ticket.getId()) ? newTicket : t).forEach(updatedTickets::add);
 
         return new TicketRepository(updatedTickets);
     }
 
     public static TicketRepository deleteById(TicketRepository repository, Integer id) throws Exception {
-        StrictHashSet<Ticket> oldTickets = new StrictHashSet<>(repository.tickets);
+        SafeHashSet<Ticket> oldTickets = new SafeHashSet<>(repository.tickets);
         Optional<Ticket> ticketOpt = findById(repository, id);
 
-        return ticketOpt.map(ticket -> new TicketRepository(oldTickets.without(ticket))).orElseGet(() -> new TicketRepository(oldTickets));
+        return ticketOpt.map(ticket -> new TicketRepository(SafeHashSet.without(oldTickets, ticket))).orElseGet(() -> new TicketRepository(oldTickets));
     }
 }

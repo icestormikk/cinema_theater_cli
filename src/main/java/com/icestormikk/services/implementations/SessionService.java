@@ -2,7 +2,7 @@ package com.icestormikk.services.implementations;
 
 import com.icestormikk.domain.cinema.Session;
 import com.icestormikk.repositories.implementations.SessionRepository;
-import com.icestormikk.utils.StrictHashSet;
+import com.icestormikk.utils.SafeHashSet;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -16,7 +16,7 @@ public class SessionService {
     }
 
     public static SessionService create(SessionService service, Integer movieId, Integer hallId, LocalDateTime startTime, LocalDateTime endTime) throws Exception {
-        Session session = new Session(null, movieId, hallId, startTime, endTime, new StrictHashSet<>());
+        Session session = new Session(null, movieId, hallId, startTime, endTime, new SafeHashSet<>());
         SessionRepository updatedRepo = SessionRepository.save(service.sessionRepository, session);
         return new SessionService(updatedRepo);
     }

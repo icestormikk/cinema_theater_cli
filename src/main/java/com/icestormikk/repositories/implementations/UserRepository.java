@@ -1,26 +1,24 @@
 package com.icestormikk.repositories.implementations;
 
 import com.icestormikk.domain.cinema.User;
-import com.icestormikk.utils.StrictHashSet;
+import com.icestormikk.utils.SafeHashSet;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class UserRepository {
-    private final StrictHashSet<User> users;
+    private final SafeHashSet<User> users;
 
     public UserRepository() {
-        this.users = new StrictHashSet<>();
+        this.users = new SafeHashSet<>();
     }
 
-    private UserRepository(StrictHashSet<User> users) {
+    private UserRepository(SafeHashSet<User> users) {
         this.users = users;
     }
 
-    public static StrictHashSet<User> findAll(UserRepository repository) {
-        return new StrictHashSet<>(repository.users);
+    public static SafeHashSet<User> findAll(UserRepository repository) {
+        return new SafeHashSet<>(repository.users);
     }
 
     public static Optional<User> findById(UserRepository repository, int id) {
@@ -32,17 +30,17 @@ public class UserRepository {
     }
 
     public static UserRepository save(UserRepository repository, User user) throws Exception {
-        StrictHashSet<User> oldUsers = new StrictHashSet<>(repository.users);
+        SafeHashSet<User> oldUsers = new SafeHashSet<>(repository.users);
         User newUser = user.withId(oldUsers.size() + 1);
 
         if(oldUsers.contains(newUser))
             return new UserRepository(oldUsers);
 
-        return new UserRepository(oldUsers.with(newUser));
+        return new UserRepository(SafeHashSet.with(oldUsers, newUser));
     }
 
     public static UserRepository updateById(UserRepository repository, Integer id, User user) throws Exception {
-        StrictHashSet<User> oldUsers = new StrictHashSet<>(repository.users);
+        SafeHashSet<User> oldUsers = new SafeHashSet<>(repository.users);
         Optional<User> oldUser = findById(repository, id);
 
         if (oldUser.isEmpty())
@@ -51,16 +49,16 @@ public class UserRepository {
         User newUser = user.withFirstName(user.getFirstName()).withLastName(user.getLastName())
                 .withUsername(user.getUsername()).withTicketIds(user.getTicketIds());
 
-        StrictHashSet<User> updatedUsers = new StrictHashSet<>();
+        SafeHashSet<User> updatedUsers = new SafeHashSet<>();
         oldUsers.stream().map(u -> Objects.equals(u.getId(), user.getId()) ? newUser : u).forEach(updatedUsers::add);
 
         return new UserRepository(updatedUsers);
     }
 
     public static UserRepository deleteById(UserRepository repository, Integer id) throws Exception {
-        StrictHashSet<User> oldUsers = new StrictHashSet<>(repository.users);
+        SafeHashSet<User> oldUsers = new SafeHashSet<>(repository.users);
         Optional<User> userOpt = findById(repository, id);
 
-        return userOpt.map(user -> new UserRepository(oldUsers.without(user))).orElseGet(() -> new UserRepository(oldUsers));
+        return userOpt.map(user -> new UserRepository(SafeHashSet.without(oldUsers, user))).orElseGet(() -> new UserRepository(oldUsers));
     }
 }

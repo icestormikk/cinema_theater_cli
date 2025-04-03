@@ -2,7 +2,7 @@ package com.icestormikk.services.implementations;
 
 import com.icestormikk.domain.cinema.Cinema;
 import com.icestormikk.repositories.implementations.CinemaRepository;
-import com.icestormikk.utils.StrictHashSet;
+import com.icestormikk.utils.SafeHashSet;
 
 public class CinemaService {
     private final CinemaRepository cinemaRepository;
@@ -11,7 +11,7 @@ public class CinemaService {
         this.cinemaRepository = cinemaRepository;
     }
 
-    public static StrictHashSet<Cinema> getAll(CinemaService service) {
+    public static SafeHashSet<Cinema> getAll(CinemaService service) {
         return CinemaRepository.findAll(service.cinemaRepository);
     }
 
@@ -24,7 +24,7 @@ public class CinemaService {
     }
 
     public static CinemaService create(CinemaService service, String title, String address) throws Exception {
-        Cinema cinema = new Cinema(null, title, address, new StrictHashSet<>(), new StrictHashSet<>(), new StrictHashSet<>());
+        Cinema cinema = new Cinema(null, title, address, new SafeHashSet<>(), new SafeHashSet<>(), new SafeHashSet<>());
         return new CinemaService(CinemaRepository.save(service.cinemaRepository, cinema));
     }
 

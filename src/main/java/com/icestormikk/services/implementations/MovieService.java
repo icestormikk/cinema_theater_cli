@@ -2,10 +2,9 @@ package com.icestormikk.services.implementations;
 
 import com.icestormikk.domain.cinema.Movie;
 import com.icestormikk.repositories.implementations.MovieRepository;
-import com.icestormikk.utils.StrictHashSet;
+import com.icestormikk.utils.SafeHashSet;
 
 import java.time.Duration;
-import java.util.Set;
 
 public class MovieService {
     private final MovieRepository movieRepository;
@@ -19,7 +18,7 @@ public class MovieService {
         return new MovieService(MovieRepository.save(service.movieRepository, movie));
     }
 
-    public static StrictHashSet<Movie> getAll(MovieService service) throws Exception {
+    public static SafeHashSet<Movie> getAll(MovieService service) throws Exception {
         return MovieRepository.findAll(service.movieRepository);
     }
 

@@ -2,7 +2,7 @@ package com.icestormikk.services.implementations;
 
 import com.icestormikk.domain.cinema.User;
 import com.icestormikk.repositories.implementations.UserRepository;
-import com.icestormikk.utils.StrictHashSet;
+import com.icestormikk.utils.SafeHashSet;
 
 import java.util.Optional;
 
@@ -13,7 +13,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public static StrictHashSet<User> getAll(UserService service) {
+    public static SafeHashSet<User> getAll(UserService service) {
         return UserRepository.findAll(service.userRepository);
     }
 

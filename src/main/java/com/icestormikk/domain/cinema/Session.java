@@ -1,6 +1,6 @@
 package com.icestormikk.domain.cinema;
 
-import com.icestormikk.utils.StrictHashSet;
+import com.icestormikk.utils.SafeHashSet;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -37,7 +37,7 @@ public class Session {
         this.hallId = hallId;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.bookedSeats = Collections.unmodifiableSet(new StrictHashSet<>(bookedSeats));
+        this.bookedSeats = Collections.unmodifiableSet(new SafeHashSet<>(bookedSeats));
     }
 
     /**
@@ -129,8 +129,8 @@ public class Session {
      * Получить список забронированных мест.
      * @return Список забронированных мест.
      */
-    public StrictHashSet<Integer> getBookedSeats() {
-        return new StrictHashSet<>(bookedSeats);
+    public SafeHashSet<Integer> getBookedSeats() {
+        return new SafeHashSet<>(bookedSeats);
     }
 
     /**
@@ -138,7 +138,7 @@ public class Session {
      * @param bookedSeats Новый список забронированных мест
      * @return  Оригинальный объект класса Session c новым списком забронированных мест
      */
-    public Session withBookedSeats(StrictHashSet<Integer> bookedSeats) {
+    public Session withBookedSeats(SafeHashSet<Integer> bookedSeats) {
         return new Session(id, movieId, hallId, startTime, endTime, bookedSeats);
     }
 
@@ -146,7 +146,7 @@ public class Session {
         if (bookedSeats.contains(seat))
             throw new RuntimeException("Booked seat " + seat + " is already booked");
 
-        Set<Integer> newBookedSeats = new StrictHashSet<>(bookedSeats);
+        Set<Integer> newBookedSeats = new SafeHashSet<>(bookedSeats);
         newBookedSeats.add(seat);
         return new Session(id, movieId, hallId, startTime, endTime, newBookedSeats);
     }
@@ -155,7 +155,7 @@ public class Session {
         if (!bookedSeats.contains(seat))
             throw new RuntimeException("Booked seat " + seat + " is not booked");
 
-        Set<Integer> newBookedSeats = new StrictHashSet<>(bookedSeats);
+        Set<Integer> newBookedSeats = new SafeHashSet<>(bookedSeats);
         newBookedSeats.remove(seat);
         return new Session(id, movieId, hallId, startTime, endTime, newBookedSeats);
     }

@@ -1,6 +1,6 @@
 package com.icestormikk.domain.cinema;
 
-import com.icestormikk.utils.StrictHashSet;
+import com.icestormikk.utils.SafeHashSet;
 
 import java.util.Objects;
 
@@ -16,7 +16,7 @@ public class User {
     /** Никнейм пользователя. */
     private final String username;
     /** Список билетов, забронированных пользователем. */
-    private final StrictHashSet<Integer> ticketIds;
+    private final SafeHashSet<Integer> ticketIds;
 
     /**
      * Конструктор для создания пользователя.
@@ -24,20 +24,20 @@ public class User {
      * @param lastName Фамилия пользователя.
      * @param username Никнейм пользователя.
      */
-    public User(Integer id, String firstName, String lastName, String username, StrictHashSet<Integer> ticketIds) {
+    public User(Integer id, String firstName, String lastName, String username, SafeHashSet<Integer> ticketIds) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
-        this.ticketIds = new StrictHashSet<>(ticketIds);
+        this.ticketIds = new SafeHashSet<>(ticketIds);
     }
 
-    public User(String firstName, String lastName, String username, StrictHashSet<Integer> ticketIds) {
+    public User(String firstName, String lastName, String username, SafeHashSet<Integer> ticketIds) {
         this(null, firstName, lastName, username, ticketIds);
     }
 
     public User(String firstName, String lastName, String username) {
-        this(null, firstName, lastName, username, new StrictHashSet<>());
+        this(null, firstName, lastName, username, new SafeHashSet<>());
     }
 
     /**
@@ -112,8 +112,8 @@ public class User {
      * Возвращает список билетов пользователя.
      * @return Список билетов пользователя.
      */
-    public StrictHashSet<Integer> getTicketIds() {
-        return new StrictHashSet<>(ticketIds);
+    public SafeHashSet<Integer> getTicketIds() {
+        return new SafeHashSet<>(ticketIds);
     }
 
     /**
@@ -121,16 +121,16 @@ public class User {
      * @param ticketIds Список билетов пользователя
      * @return Оригинальный объект класса User с новым списком билетов
      */
-    public User withTicketIds(StrictHashSet<Integer> ticketIds) {
+    public User withTicketIds(SafeHashSet<Integer> ticketIds) {
         return new User(id, firstName, lastName, username, ticketIds);
     }
 
     public User addTicketId(Integer ticketId) {
-        return new User(id, firstName, lastName, username, ticketIds.with(ticketId));
+        return new User(id, firstName, lastName, username, SafeHashSet.with(ticketIds, ticketId));
     }
 
     public User removeTicketId(Integer ticketId) {
-        return new User(id, firstName, lastName, username, ticketIds.without(ticketId));
+        return new User(id, firstName, lastName, username, SafeHashSet.without(ticketIds, ticketId));
     }
 
     @Override

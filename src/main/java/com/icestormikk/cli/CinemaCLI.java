@@ -22,7 +22,7 @@ import com.icestormikk.services.implementations.MovieService;
 import com.icestormikk.services.implementations.SessionService;
 import com.icestormikk.services.implementations.TicketService;
 import com.icestormikk.services.implementations.UserService;
-import com.icestormikk.utils.StrictHashSet;
+import com.icestormikk.utils.SafeHashSet;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -416,10 +416,9 @@ public class CinemaCLI {
         System.out.print("Enter new user name: ");
         String userName = scanner.nextLine();
 
-        Admin updatedAdmin = admin.withFirstName(firstname).withLastName(lastName).withUsername(userName);
-        adminService = AdminService.updateById(adminService, admin.getId(), updatedAdmin);
+        adminService = AdminService.updateById(adminService, admin.getId(), new Admin(admin.getId(), firstname, lastName, userName, admin.getTicketIds(), admin.getCinemaIds()));
 
-        System.out.println("Admin updated: " + updatedAdmin);
+        System.out.println("Admin updated: " + admin.getUsername());
     }
 
     private void deleteAdmin() throws Exception {
@@ -480,10 +479,9 @@ public class CinemaCLI {
         System.out.print("Enter new address: ");
         String address = scanner.nextLine();
 
-        cinema = cinema.withAddress(address).withTitle(newTitle);
-        cinemaService = CinemaService.updateById(cinemaService, cinema.getId(), cinema);
+        cinemaService = CinemaService.updateById(cinemaService, cinema.getId(), new Cinema(cinema.getId(), newTitle, address, cinema.getHallIds(), cinema.getMovieIds(), cinema.getSessionIds()));
 
-        System.out.println("Cinema updated: " + cinema);
+        System.out.println("Cinema updated");
     }
 
     private void deleteCinema() throws Exception {
@@ -553,8 +551,7 @@ public class CinemaCLI {
         System.out.print("Enter new number of seats: ");
         int seats = Integer.parseInt(scanner.nextLine());
 
-        hall = hall.withHallNumber(newHallNumber).withSeats(seats);
-        hallService = HallService.updateById(hallService, hall.getId(), hall);
+        hallService = HallService.updateById(hallService, hall.getId(), new Hall(hall.getId(), hall.getCinemaId(), newHallNumber, seats, hall.getSessionIds()));
 
         System.out.println("Hall updated: " + hall);
     }
@@ -637,10 +634,9 @@ public class CinemaCLI {
         System.out.print("Enter new rating: ");
         float rating = Float.parseFloat(scanner.nextLine());
 
-        movie = movie.withTitle(newTitle).withDurationInMin(Duration.of(duration, ChronoUnit.MINUTES)).withGenre(genre).withRating(rating);
-        movieService = MovieService.updateById(movieService, movie.getId(), movie);
+        movieService = MovieService.updateById(movieService, movie.getId(), new Movie(movie.getId(), newTitle, genre, Duration.of(duration, ChronoUnit.MINUTES), rating));
 
-        System.out.println("Movie updated: " + movie);
+        System.out.println("Movie updated");
     }
 
     private void deleteMovie() throws Exception {
@@ -656,7 +652,7 @@ public class CinemaCLI {
                 if (session.getMovieId().equals(movie.getId())) {
                     UserService.getAll(userService).forEach((user) -> {
                         try {
-                            StrictHashSet<Integer> userTicketIds = user.getTicketIds();
+                            SafeHashSet<Integer> userTicketIds = user.getTicketIds();
 
                             for (Integer ticketId : userTicketIds) {
                                 Ticket ticket = TicketService.getById(ticketService, ticketId);
@@ -741,10 +737,9 @@ public class CinemaCLI {
         System.out.print("Enter new end time (format: 2007-12-03T11:15:30): ");
         String endTime = scanner.nextLine();
 
-        session = session.withStartTime(LocalDateTime.parse(startTime)).withEndTime(LocalDateTime.parse(endTime));
-        sessionService = SessionService.updateById(sessionService, session.getId(), session);
+        sessionService = SessionService.updateById(sessionService, session.getId(), new Session(session.getId(), session.getMovieId(), session.getHallId(), LocalDateTime.parse(startTime), LocalDateTime.parse(endTime), session.getBookedSeats()));
 
-        System.out.println("Session updated: " + session);
+        System.out.println("Session updated");
     }
 
     private void deleteSession() throws Exception {
@@ -888,7 +883,7 @@ public class CinemaCLI {
     }
 
     private void deleteUserTicketsBySessionId(Integer sessionId, User user) throws Exception {
-        StrictHashSet<Integer> userTicketIds = user.getTicketIds();
+        SafeHashSet<Integer> userTicketIds = user.getTicketIds();
 
         for (Integer ticketId : userTicketIds) {
             Ticket ticket = TicketService.getById(ticketService, ticketId);

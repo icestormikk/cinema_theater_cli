@@ -1,6 +1,6 @@
 package com.icestormikk.domain.cinema;
 
-import com.icestormikk.utils.StrictHashSet;
+import com.icestormikk.utils.SafeHashSet;
 
 import java.util.Objects;
 
@@ -15,19 +15,19 @@ public class Hall {
     /** Количество мест в зале. */
     private final int seats;
     /** Список сеансов, проходящих в зале. */
-    private final StrictHashSet<Integer> sessionIds;
+    private final SafeHashSet<Integer> sessionIds;
 
     /**
      * Конструктор для создания зала.
      * @param hallNumber Номер зала.
      * @param seats Количество мест в зале.
      */
-    public Hall(Integer id, Integer cinemaId, int hallNumber, int seats, StrictHashSet<Integer> sessionIds) {
+    public Hall(Integer id, Integer cinemaId, int hallNumber, int seats, SafeHashSet<Integer> sessionIds) {
         this.id = id;
         this.cinemaId = cinemaId;
         this.hallNumber = hallNumber;
         this.seats = seats;
-        this.sessionIds = new StrictHashSet<>(sessionIds);
+        this.sessionIds = new SafeHashSet<>(sessionIds);
     }
 
     /**
@@ -96,8 +96,8 @@ public class Hall {
      * Получить список сеансов, проходящих в зале.
      * @return Список сеансов, проходящих в зале.
      */
-    public StrictHashSet<Integer> getSessionIds() {
-        return new StrictHashSet<>(sessionIds);
+    public SafeHashSet<Integer> getSessionIds() {
+        return new SafeHashSet<>(sessionIds);
     }
 
     /**
@@ -105,7 +105,7 @@ public class Hall {
      * @param sessionIds Новый список сеансов, проходящих в зале.
      * @return Оригинальный объект класса Hall с новым списком сеансов
      */
-    public Hall withSessionIds(StrictHashSet<Integer> sessionIds) {
+    public Hall withSessionIds(SafeHashSet<Integer> sessionIds) {
         return new Hall(id, cinemaId, hallNumber, seats, sessionIds);
     }
 

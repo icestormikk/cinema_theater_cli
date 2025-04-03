@@ -2,7 +2,7 @@ package com.icestormikk.services.implementations;
 
 import com.icestormikk.domain.cinema.Hall;
 import com.icestormikk.repositories.implementations.HallRepository;
-import com.icestormikk.utils.StrictHashSet;
+import com.icestormikk.utils.SafeHashSet;
 
 import java.util.Objects;
 
@@ -14,11 +14,11 @@ public class HallService {
     }
 
     public static HallService create(HallService service, Integer cinemaId, int hallNumber, int seats) throws Exception {
-        Hall hall = new Hall(null, cinemaId, hallNumber, seats, new StrictHashSet<>());
+        Hall hall = new Hall(null, cinemaId, hallNumber, seats, new SafeHashSet<>());
         return new HallService(HallRepository.save(service.hallRepository, hall));
     }
 
-    public static StrictHashSet<Hall> getAll(HallService service) {
+    public static SafeHashSet<Hall> getAll(HallService service) {
         return HallRepository.findAll(service.hallRepository);
     }
 
