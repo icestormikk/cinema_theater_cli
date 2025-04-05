@@ -5,6 +5,8 @@ import com.icestormikk.utils.SafeHashSet;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class TicketRepository {
     private final SafeHashSet<Ticket> tickets;
@@ -17,12 +19,12 @@ public class TicketRepository {
         this.tickets = tickets;
     }
 
-    public static SafeHashSet<Ticket> findAll(TicketRepository repository) {
-        return new SafeHashSet<>(repository.tickets);
+    public static SafeHashSet<Ticket> findMany(TicketRepository repository, Predicate<Ticket> condition) {
+        return new SafeHashSet<>(repository.tickets.stream().filter(condition).collect(Collectors.toList()));
     }
 
-    public static Optional<Ticket> findById(TicketRepository repository, int id) {
-        return repository.tickets.stream().filter((ticket) -> ticket.getId() == id).findFirst();
+    public static Optional<Ticket> findOne(TicketRepository repository, Predicate<Ticket> condition) {
+        return repository.tickets.stream().filter(condition).findFirst();
     }
 
     public static TicketRepository save(TicketRepository repository, Ticket ticket) throws Exception {
@@ -37,7 +39,7 @@ public class TicketRepository {
 
     public static TicketRepository updateById(TicketRepository repository, Integer id, Ticket ticket) throws Exception {
         SafeHashSet<Ticket> oldTickets = new SafeHashSet<>(repository.tickets);
-        Optional<Ticket> oldTicket = findById(repository, id);
+        Optional<Ticket> oldTicket = findOne(repository, (t) -> t.getId() == id);
 
         if (oldTicket.isEmpty())
             return new TicketRepository(oldTickets);
@@ -52,7 +54,7 @@ public class TicketRepository {
 
     public static TicketRepository deleteById(TicketRepository repository, Integer id) throws Exception {
         SafeHashSet<Ticket> oldTickets = new SafeHashSet<>(repository.tickets);
-        Optional<Ticket> ticketOpt = findById(repository, id);
+        Optional<Ticket> ticketOpt = findOne(repository, (t) -> t.getId() == id);
 
         return ticketOpt.map(ticket -> new TicketRepository(SafeHashSet.without(oldTickets, ticket))).orElseGet(() -> new TicketRepository(oldTickets));
     }

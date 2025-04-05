@@ -5,7 +5,8 @@ import com.icestormikk.utils.SafeHashSet;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class SessionRepository {
     private final SafeHashSet<Session> sessions;
@@ -18,12 +19,12 @@ public class SessionRepository {
         this.sessions = sessions;
     }
 
-    public static Set<Session> findAll(SessionRepository repository) {
-        return new SafeHashSet<>(repository.sessions);
+    public static SafeHashSet<Session> findMany(SessionRepository repository, Predicate<Session> condition) {
+        return new SafeHashSet<>(repository.sessions.stream().filter(condition).collect(Collectors.toList()));
     }
 
-    public static Optional<Session> findById(SessionRepository repository, int id) {
-        return repository.sessions.stream().filter((session) -> session.getId() == id).findFirst();
+    public static Optional<Session> findOne(SessionRepository repository, Predicate<Session> condition) {
+        return repository.sessions.stream().filter(condition).findFirst();
     }
 
     public static SessionRepository save(SessionRepository repository, Session session) throws Exception {
@@ -38,7 +39,7 @@ public class SessionRepository {
 
     public static SessionRepository updateById(SessionRepository repository, Integer id, Session session) throws Exception {
         SafeHashSet<Session> oldSessions = new SafeHashSet<>(repository.sessions);
-        Optional<Session> oldSession = findById(repository, id);
+        Optional<Session> oldSession = findOne(repository, (s) -> s.getId() == id);
 
         if (oldSession.isEmpty())
             return new SessionRepository(oldSessions);
@@ -54,9 +55,8 @@ public class SessionRepository {
 
     public static SessionRepository deleteById(SessionRepository repository, Integer id) throws Exception {
         SafeHashSet<Session> oldSessions = new SafeHashSet<>(repository.sessions);
-        Optional<Session> sessionOpt = findById(repository, id);
+        Optional<Session> sessionOpt = findOne(repository, (s) -> s.getId() == id);
 
         return sessionOpt.map(session -> new SessionRepository(SafeHashSet.without(oldSessions, session))).orElseGet(() -> new SessionRepository(oldSessions));
-
     }
 }

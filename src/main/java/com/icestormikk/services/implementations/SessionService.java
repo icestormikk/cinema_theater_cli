@@ -6,7 +6,6 @@ import com.icestormikk.utils.SafeHashSet;
 
 import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class SessionService {
     private final SessionRepository sessionRepository;
@@ -22,19 +21,19 @@ public class SessionService {
     }
 
     public static Set<Session> getAll(SessionService service) throws Exception {
-        return SessionRepository.findAll(service.sessionRepository);
+        return SessionRepository.findMany(service.sessionRepository, (s) -> true);
     }
 
     public static Session getById(SessionService service, int id) {
-        return SessionRepository.findById(service.sessionRepository, id).orElseThrow(() -> new RuntimeException("Session not found"));
+        return SessionRepository.findOne(service.sessionRepository, (s) -> s.getId() == id).orElseThrow(() -> new RuntimeException("Session not found"));
     }
 
-    public static Set<Session> getByMovieId(SessionService service, Integer movieId) {
-        return SessionRepository.findAll(service.sessionRepository).stream().filter((session) -> session.getMovieId().equals(movieId)).collect(Collectors.toSet());
+    public static SafeHashSet<Session> getByMovieId(SessionService service, Integer movieId) {
+        return SessionRepository.findMany(service.sessionRepository, (s) -> s.getMovieId().equals(movieId));
     }
 
     public static Session getByMovieIdAndHallId(SessionService service, Integer movieId, Integer hallId) {
-        return SessionRepository.findAll(service.sessionRepository).stream().filter((session) -> session.getMovieId().equals(movieId) && session.getHallId().equals(hallId)).findFirst().orElseThrow(() -> new RuntimeException("Session not found"));
+        return SessionRepository.findOne(service.sessionRepository, (s) -> s.getMovieId().equals(movieId) && s.getHallId().equals(hallId)).orElseThrow(() -> new RuntimeException("Session not found"));
     }
 
     public static SessionService updateById(SessionService service, Integer id, Session entity) throws Exception {

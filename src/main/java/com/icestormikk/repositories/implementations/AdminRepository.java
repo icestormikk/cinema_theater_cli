@@ -5,6 +5,8 @@ import com.icestormikk.utils.SafeHashSet;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class AdminRepository {
     private final SafeHashSet<Admin> admins;
@@ -17,16 +19,12 @@ public class AdminRepository {
         this.admins = admins;
     }
 
-    public static SafeHashSet<Admin> findAll(AdminRepository repository) {
-        return new SafeHashSet<>(repository.admins);
+    public static SafeHashSet<Admin> findMany(AdminRepository repository, Predicate<Admin> condition) {
+        return new SafeHashSet<>(repository.admins.stream().filter(condition).collect(Collectors.toList()));
     }
 
-    public static Optional<Admin> findById(AdminRepository repository, int id) {
-        return repository.admins.stream().filter(admin -> admin.getId() == id).findFirst();
-    }
-
-    public static Optional<Admin> findByUsername(AdminRepository repository, String username) {
-        return repository.admins.stream().filter(admin -> admin.getUsername().equalsIgnoreCase(username)).findFirst();
+    public static Optional<Admin> findOne(AdminRepository repository, Predicate<Admin> condition) {
+        return repository.admins.stream().filter(condition).findFirst();
     }
 
     public static AdminRepository save(AdminRepository repository, Admin admin) throws Exception {
@@ -41,7 +39,7 @@ public class AdminRepository {
 
     public static AdminRepository updateById(AdminRepository repository, Integer id, Admin admin) throws Exception {
         SafeHashSet<Admin> oldAdmins = new SafeHashSet<>(repository.admins);
-        Optional<Admin> oldAdmin = AdminRepository.findById(repository, id);
+        Optional<Admin> oldAdmin = AdminRepository.findOne(repository, (a) -> a.getId().equals(id));
 
         if (oldAdmin.isEmpty())
             return new AdminRepository(oldAdmins);
@@ -57,7 +55,7 @@ public class AdminRepository {
 
     public static AdminRepository deleteById(AdminRepository repository, Integer id) throws Exception {
         SafeHashSet<Admin> oldAdmins = new SafeHashSet<>(repository.admins);
-        Optional<Admin> adminOpt = AdminRepository.findById(repository, id);
+        Optional<Admin> adminOpt = AdminRepository.findOne(repository, (a) -> a.getId().equals(id));
 
         return adminOpt.map(admin -> new AdminRepository(SafeHashSet.without(oldAdmins, admin))).orElseGet(() -> new AdminRepository(oldAdmins));
 

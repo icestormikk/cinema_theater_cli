@@ -12,15 +12,15 @@ public class AdminService {
     }
 
     public static SafeHashSet<Admin> getAll(AdminService service) {
-        return AdminRepository.findAll(service.adminRepository);
+        return AdminRepository.findMany(service.adminRepository, (a) -> true);
     }
 
     public static Admin getById(AdminService service, int id) {
-        return AdminRepository.findById(service.adminRepository, id).orElseThrow(() -> new RuntimeException("Admin not found"));
+        return AdminRepository.findOne(service.adminRepository, (a) -> a.getId().equals(id)).orElseThrow(() -> new RuntimeException("Admin not found"));
     }
 
     public static Admin getByUsername(AdminService service, String username) {
-        return AdminRepository.findByUsername(service.adminRepository, username).orElseThrow(() -> new RuntimeException("Admin not found"));
+        return AdminRepository.findOne(service.adminRepository, (a) -> a.getUsername().equals(username)).orElseThrow(() -> new RuntimeException("Admin not found"));
     }
 
     public static AdminService create(AdminService service, String firstName, String lastName, String username) throws Exception {

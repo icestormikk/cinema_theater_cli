@@ -3,6 +3,7 @@ package com.icestormikk.services.implementations;
 import com.icestormikk.domain.cinema.Ticket;
 import com.icestormikk.domain.cinema.TicketStatus;
 import com.icestormikk.repositories.implementations.TicketRepository;
+import com.icestormikk.utils.SafeHashSet;
 
 import java.util.Set;
 
@@ -18,16 +19,16 @@ public class TicketService {
         return new TicketService(TicketRepository.save(service.ticketRepository, ticket));
     }
 
-    public static Set<Ticket> getAll(TicketService service) {
-        return TicketRepository.findAll(service.ticketRepository);
+    public static SafeHashSet<Ticket> getAll(TicketService service) {
+        return TicketRepository.findMany(service.ticketRepository, (t) -> true);
     }
 
     public static Ticket getById(TicketService service, int id) {
-        return TicketRepository.findById(service.ticketRepository, id).orElseThrow(() -> new RuntimeException("Ticket not found"));
+        return TicketRepository.findOne(service.ticketRepository, (t) -> t.getId() == id).orElseThrow(() -> new RuntimeException("Ticket not found"));
     }
 
     public static Ticket getBySessionIdAndSeat(TicketService service, Integer sessionId, int seat) {
-        return TicketRepository.findAll(service.ticketRepository).stream().filter((ticket) -> ticket.getSessionId().equals(sessionId) && ticket.getSeat() == seat).findFirst().orElseThrow(() -> new RuntimeException("Ticket not found"));
+        return TicketRepository.findOne(service.ticketRepository, (t) -> t.getSessionId().equals(sessionId) && t.getSeat() == seat).orElseThrow(() -> new RuntimeException("Ticket not found"));
     }
 
     public static TicketService updateById(TicketService service, Integer id, Ticket entity) throws Exception {

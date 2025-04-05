@@ -19,18 +19,15 @@ public class HallService {
     }
 
     public static SafeHashSet<Hall> getAll(HallService service) {
-        return HallRepository.findAll(service.hallRepository);
+        return HallRepository.findMany(service.hallRepository, (h) -> true);
     }
 
     public static Hall getById(HallService service, int id) {
-        return HallRepository.findById(service.hallRepository, id).orElseThrow(() -> new RuntimeException("Hall not found"));
+        return HallRepository.findOne(service.hallRepository, (h) -> h.getId() == id).orElseThrow(() -> new RuntimeException("Hall not found"));
     }
 
     public static Hall getByCinemaIdAndNumber(HallService service, Integer cinemaId, int hallNumber) {
-        return HallRepository.findAll(service.hallRepository).stream()
-                .filter((hall) -> Objects.equals(hall.getCinemaId(), cinemaId) && hall.getHallNumber() == hallNumber)
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Hall not found"));
+        return HallRepository.findOne(service.hallRepository, (c) -> c.getCinemaId().equals(cinemaId) && c.getHallNumber() == hallNumber).orElseThrow(() -> new RuntimeException("Hall not found"));
     }
 
     public static HallService updateById(HallService service, Integer id, Hall hall) throws Exception {

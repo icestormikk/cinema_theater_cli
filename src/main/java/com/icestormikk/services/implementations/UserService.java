@@ -14,15 +14,15 @@ public class UserService {
     }
 
     public static SafeHashSet<User> getAll(UserService service) {
-        return UserRepository.findAll(service.userRepository);
+        return UserRepository.findMany(service.userRepository, (u) -> true);
     }
 
     public static User getById(UserService service, int id) {
-        return UserRepository.findById(service.userRepository, id).orElse(null);
+        return UserRepository.findOne(service.userRepository, (u) -> u.getId() == id).orElse(null);
     }
 
     public static User getByUsername(UserService service, String name) {
-        return UserRepository.findByUsername(service.userRepository, name).orElse(null);
+        return UserRepository.findOne(service.userRepository, (u) -> u.getUsername().equals(name)).orElse(null);
     }
 
     public static UserService create(UserService service, String firstName, String lastName, String username) throws Exception {
@@ -31,11 +31,6 @@ public class UserService {
     }
 
     public static UserService updateById(UserService service, Integer id, User user) throws Exception {
-        Optional<User> existingUser = UserRepository.findById(service.userRepository, user.getId());
-
-        if (existingUser.isEmpty())
-            return new UserService(service.userRepository);
-
         return new UserService(UserRepository.updateById(service.userRepository, id, user));
     }
 
