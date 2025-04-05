@@ -12,15 +12,15 @@ public class CinemaService {
     }
 
     public static SafeHashSet<Cinema> getAll(CinemaService service) {
-        return CinemaRepository.findAll(service.cinemaRepository);
+        return CinemaRepository.findMany(service.cinemaRepository, (c) -> true);
     }
 
     public static Cinema getById(CinemaService service, int id) {
-        return CinemaRepository.findById(service.cinemaRepository, id).orElseThrow(() -> new RuntimeException("Cinema not found"));
+        return CinemaRepository.findOne(service.cinemaRepository, (c) -> c.getId() == id).orElseThrow(() -> new RuntimeException("Cinema not found"));
     }
 
     public static Cinema getByTitle(CinemaService service, String title) {
-        return CinemaRepository.findByTitle(service.cinemaRepository, title).orElseThrow(() -> new RuntimeException("Cinema not found"));
+        return CinemaRepository.findOne(service.cinemaRepository, (c) -> c.getTitle().equals(title)).orElseThrow(() -> new RuntimeException("Cinema not found"));
     }
 
     public static CinemaService create(CinemaService service, String title, String address) throws Exception {

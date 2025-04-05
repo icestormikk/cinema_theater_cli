@@ -5,6 +5,8 @@ import com.icestormikk.utils.SafeHashSet;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class HallRepository {
     private final SafeHashSet<Hall> halls;
@@ -17,12 +19,12 @@ public class HallRepository {
         this.halls = users;
     }
 
-    public static SafeHashSet<Hall> findAll(HallRepository repository) {
-        return new SafeHashSet<>(repository.halls);
+    public static SafeHashSet<Hall> findMany(HallRepository repository, Predicate<Hall> condition) {
+        return new SafeHashSet<>(repository.halls.stream().filter(condition).collect(Collectors.toList()));
     }
 
-    public static Optional<Hall> findById(HallRepository repository, int id) {
-        return repository.halls.stream().filter((hall) -> hall.getId() == id).findFirst();
+    public static Optional<Hall> findOne(HallRepository repository, Predicate<Hall> condition) {
+        return repository.halls.stream().filter(condition).findFirst();
     }
 
     public static HallRepository save(HallRepository repository, Hall hall) throws Exception {
@@ -37,7 +39,7 @@ public class HallRepository {
 
     public static HallRepository updateById(HallRepository repository, Integer id, Hall hall) throws Exception {
         SafeHashSet<Hall> oldHalls = new SafeHashSet<>(repository.halls);
-        Optional<Hall> oldHall = HallRepository.findById(repository, id);
+        Optional<Hall> oldHall = HallRepository.findOne(repository, (h) -> h.getId() == id);
 
         if (oldHall.isEmpty())
             return new HallRepository(repository.halls);
@@ -53,7 +55,7 @@ public class HallRepository {
 
     public static HallRepository deleteById(HallRepository repository, Integer id) throws Exception {
         SafeHashSet<Hall> oldHalls = new SafeHashSet<>(repository.halls);
-        Optional<Hall> hallOpt = HallRepository.findById(repository, id);
+        Optional<Hall> hallOpt = HallRepository.findOne(repository, (h) -> h.getId() == id);
 
         return hallOpt.map(hall -> new HallRepository(SafeHashSet.without(oldHalls, hall))).orElseGet(() -> new HallRepository(oldHalls));
     }

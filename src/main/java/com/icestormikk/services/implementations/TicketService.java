@@ -19,15 +19,15 @@ public class TicketService {
     }
 
     public static Set<Ticket> getAll(TicketService service) {
-        return TicketRepository.findAll(service.ticketRepository);
+        return TicketRepository.findMany(service.ticketRepository, (t) -> true);
     }
 
     public static Ticket getById(TicketService service, int id) {
-        return TicketRepository.findById(service.ticketRepository, id).orElseThrow(() -> new RuntimeException("Ticket not found"));
+        return TicketRepository.findOne(service.ticketRepository, (t) -> t.getId() == id).orElseThrow(() -> new RuntimeException("Ticket not found"));
     }
 
     public static Ticket getBySessionIdAndSeat(TicketService service, Integer sessionId, int seat) {
-        return TicketRepository.findAll(service.ticketRepository).stream().filter((ticket) -> ticket.getSessionId().equals(sessionId) && ticket.getSeat() == seat).findFirst().orElseThrow(() -> new RuntimeException("Ticket not found"));
+        return TicketRepository.findOne(service.ticketRepository, (t) -> t.getSessionId().equals(sessionId) && t.getSeat() == seat).orElseThrow(() -> new RuntimeException("Ticket not found"));
     }
 
     public static TicketService updateById(TicketService service, Integer id, Ticket entity) throws Exception {

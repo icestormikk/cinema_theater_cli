@@ -19,18 +19,15 @@ public class MovieService {
     }
 
     public static SafeHashSet<Movie> getAll(MovieService service) throws Exception {
-        return MovieRepository.findAll(service.movieRepository);
+        return MovieRepository.findMany(service.movieRepository, (m) -> true);
     }
 
     public static Movie getById(MovieService service, int id) {
-        return MovieRepository.findById(service.movieRepository, id).orElseThrow(() -> new RuntimeException("Movie not found"));
+        return MovieRepository.findOne(service.movieRepository, (m) -> m.getId() == id).orElseThrow(() -> new RuntimeException("Movie not found"));
     }
 
     public static Movie getByTitle(MovieService service, String title) {
-        return MovieRepository.findAll(service.movieRepository).stream()
-            .filter((movie) -> movie.getTitle().equals(title))
-            .findFirst()
-            .orElseThrow(() -> new RuntimeException("Movie not found"));
+        return MovieRepository.findOne(service.movieRepository, (m) -> m.getTitle().equals(title)).orElseThrow(() -> new RuntimeException("Movie not found"));
     }
 
     public static MovieService updateById(MovieService service, Integer id, Movie movie) throws Exception {

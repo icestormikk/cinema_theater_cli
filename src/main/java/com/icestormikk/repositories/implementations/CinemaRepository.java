@@ -5,6 +5,8 @@ import com.icestormikk.utils.SafeHashSet;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class CinemaRepository {
     private final SafeHashSet<Cinema> cinemas;
@@ -17,16 +19,12 @@ public class CinemaRepository {
         this.cinemas = cinemas;
     }
 
-    public static SafeHashSet<Cinema> findAll(CinemaRepository repository) {
-        return new SafeHashSet<>(repository.cinemas);
+    public static SafeHashSet<Cinema> findMany(CinemaRepository repository, Predicate<Cinema> condition) {
+        return new SafeHashSet<>(repository.cinemas.stream().filter(condition).collect(Collectors.toList()));
     }
 
-    public static Optional<Cinema> findById(CinemaRepository repository, int id) {
-        return repository.cinemas.stream().filter((cinema) -> cinema.getId() == id).findFirst();
-    }
-
-    public static Optional<Cinema> findByTitle(CinemaRepository repository, String title) {
-        return repository.cinemas.stream().filter((cinema) -> cinema.getTitle().equals(title)).findFirst();
+    public static Optional<Cinema> findOne(CinemaRepository repository, Predicate<Cinema> condition) {
+        return repository.cinemas.stream().filter(condition).findFirst();
     }
 
     public static CinemaRepository save(CinemaRepository repository, Cinema cinema) throws Exception {
@@ -41,7 +39,7 @@ public class CinemaRepository {
 
     public static CinemaRepository updateById(CinemaRepository repository, Integer id, Cinema cinema) throws Exception {
         SafeHashSet<Cinema> oldCinemas = new SafeHashSet<>(repository.cinemas);
-        Optional<Cinema> oldCinema = CinemaRepository.findById(repository, id);
+        Optional<Cinema> oldCinema = CinemaRepository.findOne(repository, (c) -> c.getId() == id);
 
         if (oldCinema.isEmpty())
             return new CinemaRepository(oldCinemas);
@@ -57,7 +55,7 @@ public class CinemaRepository {
 
     public static CinemaRepository deleteById(CinemaRepository repository, Integer id) throws Exception {
         SafeHashSet<Cinema> oldCinemas = new SafeHashSet<>(repository.cinemas);
-        Optional<Cinema> cinemaOpt = CinemaRepository.findById(repository, id);
+        Optional<Cinema> cinemaOpt = CinemaRepository.findOne(repository, (c) -> c.getId() == id);
 
         return cinemaOpt.map(cinema -> new CinemaRepository(SafeHashSet.without(oldCinemas, cinema))).orElseGet(() -> new CinemaRepository(oldCinemas));
     }
